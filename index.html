@@ -1,664 +1,1491 @@
 <!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="График смен">
-<meta name="theme-color" content="#0f1117">
-<title>График смен</title>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Share+Tech+Mono&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#0f1117;--surf:#171b24;--card:#1e2333;--bord:#2a3050;--bord2:#3a4264;
-  --text:#e8ecf4;--muted:#7b88a8;--acc:#4f8ef7;--green:#38d9a9;
-  --day:#F5A623;--day-bg:rgba(245,166,35,.16);
-  --night:#3D7BD4;--night-bg:rgba(61,123,212,.16);
-  --sleep:#8B6FD4;--sleep-bg:rgba(139,111,212,.16);
-  --off:#4A9B6F;--off-bg:rgba(74,155,111,.13);
-  --extra:#D44DA0;--extra-bg:rgba(212,77,160,.16);
-}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;padding-bottom:52px;}
-.hdr{background:var(--surf);border-bottom:2px solid var(--day);padding:12px 15px 10px;position:sticky;top:0;z-index:100;}
-.hdr h1{font-family:'Oswald',sans-serif;font-size:1.3rem;letter-spacing:.07em;font-weight:700;}
-.hdr h1 em{color:var(--day);font-style:normal;}
-.hdr p{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.05em;margin-top:2px;}
-.wrap{max-width:600px;margin:0 auto;padding:11px 11px 0;display:flex;flex-direction:column;gap:9px;}
-.card{background:var(--card);border:1px solid var(--bord);border-radius:8px;overflow:hidden;}
-.ch{background:var(--surf);border-bottom:1px solid var(--bord);padding:8px 13px;
-  font-family:'Oswald',sans-serif;font-size:.87rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;}
-.cb{padding:12px;}
-/* ROLE */
-.rs{position:relative;}
-.rs select{width:100%;background:var(--surf);border:1.5px solid var(--bord);border-radius:6px;
-  color:var(--text);font-family:'Nunito',sans-serif;font-size:.97rem;font-weight:600;
-  padding:10px 36px 10px 12px;outline:none;-webkit-appearance:none;appearance:none;cursor:pointer;}
-.rs select:focus{border-color:var(--acc);}
-.rs::after{content:'▾';position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
-.rinfo{margin-top:6px;font-family:'Share Tech Mono',monospace;font-size:.68rem;color:var(--muted);}
-/* SETTINGS TOGGLE */
-.stog{display:flex;align-items:center;justify-content:space-between;cursor:pointer;
-  padding:9px 13px;border-top:1px solid var(--bord);
-  font-family:'Share Tech Mono',monospace;font-size:.68rem;color:var(--muted);
-  letter-spacing:.04em;user-select:none;transition:color .15s;}
-.stog:hover{color:var(--text);}
-.sarr{transition:transform .2s;display:inline-block;}
-.sarr.open{transform:rotate(180deg);}
-.sinner{display:none;padding:12px;border-top:1px solid var(--bord);}
-.sinner.on{display:block;}
-/* MODE */
-.mrow{display:flex;gap:7px;margin-bottom:11px;}
-.mbtn{flex:1;padding:8px;background:var(--surf);border:1.5px solid var(--bord);border-radius:6px;
-  font-family:'Oswald',sans-serif;font-size:.8rem;letter-spacing:.06em;color:var(--muted);cursor:pointer;transition:all .15s;}
-.mbtn.on{border-color:var(--acc);color:var(--acc);background:rgba(79,142,247,.08);}
-/* ABOX */
-.abox{background:var(--bg);border:1px solid var(--bord);border-radius:6px;padding:10px;margin-bottom:10px;display:none;}
-.abox.on{display:block;}
-.albl{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px;}
-.arow{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;}
-.afld{display:flex;flex-direction:column;gap:3px;flex:1;min-width:100px;}
-.afld label{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted);text-transform:uppercase;}
-input[type="date"],.ssel{background:var(--card);border:1.5px solid var(--bord);border-radius:5px;
-  color:var(--text);font-family:'Nunito',sans-serif;font-size:.87rem;padding:7px 9px;outline:none;width:100%;color-scheme:dark;}
-input[type="date"]:focus,.ssel:focus{border-color:var(--acc);}
-.abtn{background:var(--acc);border:none;border-radius:6px;padding:8px 14px;
-  font-family:'Oswald',sans-serif;font-size:.85rem;letter-spacing:.06em;color:#fff;cursor:pointer;white-space:nowrap;}
-/* CAL */
-.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
-.cal-mo{font-family:'Oswald',sans-serif;font-size:1rem;letter-spacing:.06em;font-weight:600;}
-.nbtn{background:var(--surf);border:1px solid var(--bord);border-radius:5px;color:var(--text);
-  width:30px;height:30px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.cgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
-.cdow{text-align:center;font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--muted);padding:3px 0;text-transform:uppercase;}
-.cday{border-radius:5px;border:1.5px solid transparent;cursor:pointer;transition:border-color .15s;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:2px 1px;min-height:43px;background:var(--surf);}
-.cday:active{opacity:.7;}
-.cday.empty{background:transparent;cursor:default;border-color:transparent!important;}
-.cday.today{border-color:var(--acc)!important;box-shadow:0 0 0 1px var(--acc);min-height:51px;background:rgba(79,142,247,.07)!important;}
-.dn{font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--muted);line-height:1;}
-.today .dn{font-size:.75rem;color:var(--acc);font-weight:700;}
-.dl{font-family:'Oswald',sans-serif;font-size:.66rem;letter-spacing:.03em;margin-top:2px;line-height:1;display:flex;align-items:center;gap:1px;}
-.dh{font-family:'Share Tech Mono',monospace;font-size:.54rem;color:var(--muted);margin-top:1px;line-height:1;}
-.dstar{font-size:.62rem;color:var(--acc);line-height:1;margin-left:1px;}
-.sd{background:var(--day-bg)!important;border-color:rgba(245,166,35,.28)!important;}
-.sn{background:var(--night-bg)!important;border-color:rgba(61,123,212,.28)!important;}
-.ss{background:var(--sleep-bg)!important;border-color:rgba(139,111,212,.28)!important;}
-.so{background:var(--off-bg)!important;border-color:rgba(74,155,111,.18)!important;}
-.se{background:var(--extra-bg)!important;border-color:rgba(212,77,160,.28)!important;}
-.sd .dl{color:var(--day);}
-.sn .dl{color:var(--night);}
-.ss .dl{color:var(--sleep);}
-.so .dl{color:var(--off);}
-.se .dl{color:var(--extra);}
-/* LEGEND */
-.legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
-.li{display:flex;align-items:center;gap:3px;font-size:.68rem;color:var(--muted);}
-.ld{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
-/* SUMMARY */
-.sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
-.stile{background:var(--surf);border:1px solid var(--bord);border-radius:6px;padding:8px 6px;text-align:center;}
-.stile .sl{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:2px;}
-.stile .sv{font-family:'Oswald',sans-serif;font-size:1.45rem;font-weight:700;letter-spacing:.02em;display:block;line-height:1;}
-.stile .ss{font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--muted);display:block;margin-top:2px;}
-.c-d{color:var(--day);}.c-n{color:var(--night);}.c-a{color:var(--acc);}
-/* SALARY */
-.slbl{font-family:'Share Tech Mono',monospace;font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:5px;}
-.srow{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
-input.ni{background:var(--surf);border:1.5px solid var(--bord);border-radius:6px;
-  color:var(--text);font-family:'Share Tech Mono',monospace;font-size:1.05rem;
-  padding:9px 11px;outline:none;width:108px;text-align:center;transition:border-color .15s;}
-input.ni:focus{border-color:var(--acc);}
-.snote{font-size:.68rem;color:var(--muted);font-family:'Share Tech Mono',monospace;}
-.divider{height:1px;background:var(--bord);margin:3px 0;}
-.salr{background:linear-gradient(135deg,rgba(79,142,247,.1),rgba(56,217,169,.05));
-  border:1.5px solid rgba(79,142,247,.28);border-radius:8px;padding:16px;text-align:center;display:none;}
-.salr.on{display:block;}
-.sall{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
-.sala{font-family:'Oswald',sans-serif;font-size:clamp(2rem,9vw,3.6rem);font-weight:700;letter-spacing:.04em;color:var(--text);line-height:1;}
-.salc{font-size:.82rem;color:var(--muted);margin-top:2px;}
-.salf{margin-top:10px;padding-top:10px;border-top:1px solid var(--bord);font-family:'Share Tech Mono',monospace;font-size:.68rem;color:var(--muted);line-height:1.9;}
-.salf b{color:var(--text);}.hi{color:var(--green);}
-/* MODAL */
-.mo{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;
-  display:flex;align-items:flex-end;justify-content:center;
-  opacity:0;pointer-events:none;transition:opacity .2s;}
-.mo.on{opacity:1;pointer-events:all;}
-.mbox{background:var(--card);border-radius:14px 14px 0 0;border:1px solid var(--bord);border-bottom:none;
-  width:100%;max-width:600px;padding:16px 14px 34px;
-  transform:translateY(100%);transition:transform .25s ease;}
-.mo.on .mbox{transform:translateY(0);}
-.mt{font-family:'Oswald',sans-serif;font-size:1rem;letter-spacing:.06em;margin-bottom:12px;
-  display:flex;justify-content:space-between;align-items:center;}
-.mclose{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;}
-.spick{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:11px;}
-.spbtn{padding:9px 6px;border-radius:6px;border:1.5px solid var(--bord);background:var(--surf);
-  font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s;text-align:center;}
-.sp-d{border-color:var(--day);color:var(--day);}
-.sp-n{border-color:var(--night);color:var(--night);}
-.sp-s{border-color:var(--sleep);color:var(--sleep);}
-.sp-o{border-color:var(--off);color:var(--off);}
-.sp-e{border-color:var(--extra);color:var(--extra);grid-column:1/-1;}
-.sp-d.ap{background:var(--day-bg);}
-.sp-n.ap{background:var(--night-bg);}
-.sp-s.ap{background:var(--sleep-bg);}
-.sp-o.ap{background:var(--off-bg);}
-.sp-e.ap{background:var(--extra-bg);}
-.edur{display:none;margin-bottom:9px;}
-.edur.on{display:flex;gap:6px;align-items:center;}
-.edur label{font-size:.7rem;color:var(--muted);font-family:'Share Tech Mono',monospace;white-space:nowrap;}
-.edbtn{padding:5px 12px;border-radius:5px;border:1.5px solid var(--bord);background:var(--surf);
-  color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:.76rem;cursor:pointer;}
-.edbtn.on{border-color:var(--extra);color:var(--extra);background:var(--extra-bg);}
-.mhrow{display:flex;align-items:center;gap:8px;margin-top:8px;}
-.mhrow label{font-size:.72rem;color:var(--muted);font-family:'Share Tech Mono',monospace;white-space:nowrap;}
-input.mhi{background:var(--surf);border:1.5px solid var(--bord);border-radius:5px;
-  color:var(--text);font-family:'Share Tech Mono',monospace;font-size:.92rem;
-  padding:6px 10px;outline:none;width:80px;text-align:center;}
-input.mhi:focus{border-color:var(--acc);}
-.mhnote{font-size:.66rem;color:var(--muted);font-family:'Share Tech Mono',monospace;}
-.nlbl{font-family:'Share Tech Mono',monospace;font-size:.66rem;color:var(--acc);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px;}
-textarea.noteinp{width:100%;background:var(--surf);border:1.5px solid var(--bord);border-radius:5px;
-  color:var(--text);font-family:'Nunito',sans-serif;font-size:.88rem;
-  padding:8px 10px;outline:none;resize:none;min-height:60px;line-height:1.45;}
-textarea.noteinp:focus{border-color:var(--acc);}
-textarea.noteinp::placeholder{color:var(--muted);}
-.msave{width:100%;margin-top:12px;padding:11px;background:var(--acc);border:none;border-radius:6px;
-  font-family:'Oswald',sans-serif;font-size:.93rem;letter-spacing:.07em;color:#fff;cursor:pointer;}
-@media(max-width:360px){.sgrid{grid-template-columns:1fr 1fr;}.spick{grid-template-columns:1fr;}.sp-e{grid-column:unset;}}
-</style>
-</head>
+<!-- saved from url=(0099)https://a8465c40-8300-4f4b-a021-7b7e595cac16-00-hysxb2wyuza3.kirk.replit.dev/salary-calculator.html -->
+<html lang="ru"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="График смен">
+  <meta name="theme-color" content="#1e293b">
+  <title>График смен</title>
+  <link id="manifest-link" rel="manifest" href="blob:https://a8465c40-8300-4f4b-a021-7b7e595cac16-00-hysxb2wyuza3.kirk.replit.dev/4888cf43-2cf9-4dcc-9bc8-2023e5d25879">
+  <style>
+    :root {
+      --shift-day-bg: #FDE68A;
+      --shift-day-text: #78350f;
+      --shift-day-border: #d97706;
+      --shift-night-bg: #93C5FD;
+      --shift-night-text: #1e3a8a;
+      --shift-night-border: #1d4ed8;
+      --shift-sleep-bg: #C4B5FD;
+      --shift-sleep-text: #3b0764;
+      --shift-sleep-border: #6d28d9;
+      --shift-off-bg: #86EFAC;
+      --shift-off-text: #14532d;
+      --shift-off-border: #15803d;
+      --shift-extra-bg: #F9A8D4;
+      --shift-extra-text: #500724;
+      --shift-extra-border: #be185d;
+      --shift-none-bg: #e2e8f0;
+      --shift-none-text: #64748b;
+      --shift-none-border: #94a3b8;
+      --bg: #f0f4f8;
+      --surface: #ffffff;
+      --surface2: #f8fafc;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --primary: #1e293b;
+      --primary-light: #334155;
+      --radius: 14px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      max-width: 500px;
+      margin: 0 auto;
+      padding-bottom: env(safe-area-inset-bottom, 16px);
+    }
+    .app-header {
+      background: var(--primary);
+      color: white;
+      padding: 16px 16px 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .app-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .app-title { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+    .position-select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 15px;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='white' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+    .position-select option { background: #1e293b; color: white; }
+    .main { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-header h2 { font-size: 14px; font-weight: 600; color: var(--text); }
+    .card-badge {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--surface2);
+      padding: 3px 8px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+    .month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+    }
+    .month-nav-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      width: 36px; height: 36px;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      transition: background 0.15s;
+    }
+    .month-nav-btn:active { background: var(--border); }
+    .month-name { font-size: 16px; font-weight: 700; color: var(--text); }
+    .mode-toggle {
+      display: flex;
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 3px;
+      margin: 0 16px 12px;
+      border: 1px solid var(--border);
+    }
+    .mode-btn {
+      flex: 1; padding: 8px 6px;
+      border: none; border-radius: 8px;
+      background: none; cursor: pointer;
+      font-size: 13px; font-weight: 500;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    .mode-btn.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      font-weight: 600;
+    }
+    .calendar-wrap { padding: 0 8px 8px; }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 3px;
+    }
+    .day-header {
+      text-align: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      padding: 4px 0 6px;
+      letter-spacing: 0.3px;
+    }
+    .day-cell {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 9px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 1px;
+      border: 2px solid transparent;
+      transition: transform 0.1s, box-shadow 0.15s;
+      user-select: none;
+    }
+    .day-cell:active { transform: scale(0.92); }
+    .day-cell.empty { background: transparent; cursor: default; pointer-events: none; }
+    .day-cell.today {
+      transform: scale(1.13);
+      box-shadow: 0 5px 18px rgba(0,0,0,0.25);
+      z-index: 2;
+      border-width: 2.5px;
+    }
+    .day-cell.today::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 7px;
+      background: rgba(0,0,0,0.18);
+      pointer-events: none;
+    }
+    .day-cell.today .day-num,
+    .day-cell.today .day-label,
+    .day-cell.today .day-note-mark { position: relative; z-index: 1; }
+    .day-cell.today.shift-day    { border-color: #92400e; }
+    .day-cell.today.shift-night  { border-color: #1e3a8a; }
+    .day-cell.today.shift-sleep  { border-color: #4c1d95; }
+    .day-cell.today.shift-off    { border-color: #14532d; }
+    .day-cell.today.shift-extra  { border-color: #831843; }
+    .day-cell.today.shift-none   { border-color: #475569; }
+    .day-cell.other-month { opacity: 0.35; }
+    .day-cell.shift-day    { background: var(--shift-day-bg);   color: var(--shift-day-text); }
+    .day-cell.shift-night  { background: var(--shift-night-bg); color: var(--shift-night-text); }
+    .day-cell.shift-sleep  { background: var(--shift-sleep-bg); color: var(--shift-sleep-text); }
+    .day-cell.shift-off    { background: var(--shift-off-bg);   color: var(--shift-off-text); }
+    .day-cell.shift-extra  { background: var(--shift-extra-bg); color: var(--shift-extra-text); }
+    .day-cell.shift-none   { background: var(--shift-none-bg);  color: var(--shift-none-text); }
+    .day-num { font-size: 13px; font-weight: 700; line-height: 1; }
+    .day-label {
+      font-size: 7.5px; font-weight: 700;
+      text-align: center; line-height: 1.1;
+      margin-top: 2px; max-width: 100%;
+      overflow: hidden; text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .day-note-mark {
+      position: absolute; top: 2px; right: 3px;
+      font-size: 8px; opacity: 0.7; line-height: 1;
+    }
+    .day-modified-mark {
+      position: absolute; top: 2px; left: 3px;
+      font-size: 7px; opacity: 0.5; line-height: 1;
+    }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 6px 10px;
+      padding: 8px 16px 12px;
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 11px; color: var(--text-muted);
+    }
+    .legend-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .settings-toggle-row {
+      padding: 0 16px 12px;
+      display: flex;
+      align-items: center;
+    }
+    .toggle-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+      padding: 8px 12px;
+      transition: background 0.15s;
+    }
+    .toggle-btn:active { background: var(--border); }
+    .chevron { transition: transform 0.25s; font-style: normal; }
+    .chevron.open { transform: rotate(180deg); }
+    .collapsible {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.3s ease;
+    }
+    .collapsible.open { max-height: 600px; }
+    .settings-panel {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+      background: var(--surface2);
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .field-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
+    .input-field {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    .input-field:focus { border-color: var(--primary); }
+    .input-field[type="number"]::-webkit-inner-spin-button { opacity: 0.5; }
+    select.input-field {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+    .btn-primary {
+      width: 100%; padding: 13px;
+      background: var(--primary); color: white;
+      border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: background 0.15s;
+    }
+    .btn-primary:active { background: var(--primary-light); }
+    .btn-secondary {
+      width: 100%; padding: 11px;
+      background: var(--surface2); color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+      font-size: 14px; font-weight: 500;
+      cursor: pointer; font-family: inherit;
+      transition: background 0.15s;
+    }
+    .btn-secondary:active { background: var(--border); }
+    .btn-danger {
+      padding: 9px 14px;
+      background: #fee2e2; color: #b91c1c;
+      border: 1px solid #fecaca; border-radius: 9px;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; font-family: inherit;
+    }
+    .summary-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+    }
+    .summary-item {
+      text-align: center; padding: 14px 8px;
+      border-right: 1px solid var(--border);
+    }
+    .summary-item:last-child { border-right: none; }
+    .summary-value { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; }
+    .summary-label { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+    .calc-section { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .calc-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .calc-row:last-child { border-bottom: none; }
+    .calc-row-label { font-size: 14px; color: var(--text-muted); }
+    .calc-row-value { font-size: 18px; font-weight: 700; color: var(--text); }
+    .salary-card {
+      background: var(--primary);
+      color: white;
+      margin: 0 16px 16px;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .salary-label-text { font-size: 12px; opacity: 0.65; letter-spacing: 0.3px; }
+    .salary-amount { font-size: 34px; font-weight: 800; margin: 4px 0; letter-spacing: -1px; }
+    .salary-formula { font-size: 12px; opacity: 0.6; margin-top: 8px; }
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 1000;
+      display: flex; align-items: flex-end; justify-content: center;
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal {
+      background: var(--surface);
+      border-radius: 20px 20px 0 0;
+      width: 100%; max-width: 500px;
+      max-height: 92vh;
+      overflow-y: auto;
+      padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    }
+    .modal-handle {
+      width: 40px; height: 4px;
+      background: var(--border); border-radius: 2px;
+      margin: 12px auto 0;
+    }
+    .modal-title {
+      padding: 16px 20px 4px;
+      font-size: 18px; font-weight: 700;
+    }
+    .modal-date-info {
+      padding: 0 20px 14px;
+      font-size: 13px; color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-section { padding: 14px 20px 0; }
+    .modal-section-title {
+      font-size: 11px; font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.6px;
+      margin-bottom: 10px;
+    }
+    .shift-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+    }
+    .shift-btn {
+      padding: 12px 10px;
+      border-radius: 11px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      font-size: 13px; font-weight: 600;
+      text-align: left;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .shift-btn.shift-day    { background: var(--shift-day-bg);   color: var(--shift-day-text); }
+    .shift-btn.shift-night  { background: var(--shift-night-bg); color: var(--shift-night-text); }
+    .shift-btn.shift-sleep  { background: var(--shift-sleep-bg); color: var(--shift-sleep-text); }
+    .shift-btn.shift-off    { background: var(--shift-off-bg);   color: var(--shift-off-text); }
+    .shift-btn.shift-extra  { background: var(--shift-extra-bg); color: var(--shift-extra-text); }
+    .shift-btn.shift-none   { background: var(--shift-none-bg);  color: var(--shift-none-text); }
+    .shift-btn.active.shift-day    { border-color: var(--shift-day-border); }
+    .shift-btn.active.shift-night  { border-color: var(--shift-night-border); }
+    .shift-btn.active.shift-sleep  { border-color: var(--shift-sleep-border); }
+    .shift-btn.active.shift-off    { border-color: var(--shift-off-border); }
+    .shift-btn.active.shift-extra  { border-color: var(--shift-extra-border); }
+    .shift-btn.active.shift-none   { border-color: var(--shift-none-border); }
+    .shift-btn-icon { font-size: 16px; display: block; margin-bottom: 3px; }
+    .shift-btn-label { display: block; }
+    .shift-btn-hours { display: block; font-size: 10px; font-weight: 500; opacity: 0.7; margin-top: 1px; }
+    .extra-dur-row { display: flex; gap: 8px; margin-top: 10px; }
+    .extra-dur-btn {
+      flex: 1; padding: 9px;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface2);
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; text-align: center; font-family: inherit;
+    }
+    .extra-dur-btn.active { background: var(--shift-extra-bg); border-color: var(--shift-extra-border); color: var(--shift-extra-text); font-weight: 700; }
+    .hours-adjuster { display: flex; align-items: center; gap: 10px; }
+    .adj-btn {
+      width: 40px; height: 40px;
+      border-radius: 10px; border: 1.5px solid var(--border);
+      background: var(--surface2); font-size: 22px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      color: var(--text); font-weight: 300; flex-shrink: 0;
+      font-family: inherit;
+    }
+    .adj-btn:active { background: var(--border); }
+    .adj-input {
+      flex: 1; text-align: center;
+      padding: 9px; border: 1.5px solid var(--border);
+      border-radius: 10px; font-size: 18px; font-weight: 700;
+      color: var(--text); font-family: inherit; outline: none;
+    }
+    .adj-input:focus { border-color: var(--primary); }
+    textarea.input-field { resize: none; height: 80px; }
+    .modal-actions { padding: 14px 20px 0; display: flex; flex-direction: column; gap: 8px; }
+    .info-box {
+      background: #f0f9ff; border: 1px solid #bae6fd;
+      border-radius: 10px; padding: 11px 14px;
+      font-size: 12px; color: #0c4a6e; line-height: 1.5;
+    }
+    .divider { height: 1px; background: var(--border); margin: 2px 0; }
+    .empty-state {
+      text-align: center; padding: 28px 20px;
+      color: var(--text-muted); font-size: 14px;
+    }
+    .empty-state-icon { font-size: 36px; margin-bottom: 10px; opacity: 0.4; }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pill {
+      padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border);
+      font-size: 12px; background: var(--surface2); color: var(--text-muted);
+    }
+    .pill.active-day { background: var(--shift-day-bg); color: var(--shift-day-text); border-color: var(--shift-day-border); }
+    .pill.active-night { background: var(--shift-night-bg); color: var(--shift-night-text); border-color: var(--shift-night-border); }
+    .week-info { font-size: 11px; color: var(--text-muted); font-style: italic; }
+    .bottom-space { height: 20px; }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a; --surface: #1e293b; --surface2: #162032;
+        --border: #2d3f55; --text: #f1f5f9; --text-muted: #94a3b8;
+        --primary: #334155; --primary-light: #475569;
+        --shift-day-bg: #451a00; --shift-day-text: #fdba74;
+        --shift-night-bg: #0f1e40; --shift-night-text: #93c5fd;
+        --shift-sleep-bg: #1a0f40; --shift-sleep-text: #c4b5fd;
+        --shift-off-bg: #052e16; --shift-off-text: #86efac;
+        --shift-extra-bg: #2e0a24; --shift-extra-text: #f0abfc;
+        --shift-none-bg: #162032; --shift-none-text: #475569;
+      }
+    }
+  </style>
+<style>[_nghost-ng-c2697620354]{font-family:Open Sans,sans-serif;color:#121212}</style></head>
 <body>
-<div class="hdr">
-  <h1>ГРАФИК <em>СМЕН</em></h1>
-  <p>// РАСПИСАНИЕ · КАЛЕНДАРЬ · РАСЧЁТ З/П</p>
-</div>
-<div class="wrap">
 
-  <!-- ДОЛЖНОСТЬ -->
-  <div class="card">
-    <div class="ch">Должность</div>
-    <div class="cb">
-      <div class="rs">
-        <select id="roleSelect" onchange="onRole()">
-          <option value="">— выберите должность —</option>
-          <option value="pressovsh">Прессовщик</option>
-          <option value="vod_sklad">Водитель (склад, 5×2)</option>
-          <option value="vod_smen">Водитель (смена, 2×2)</option>
-          <option value="raznorab">Разнорабочий (5×2)</option>
-          <option value="upakovsh">Упаковщик</option>
-          <option value="dispetcher">Диспетчер</option>
-          <option value="nach_smen">Начальник смены</option>
-          <option value="melnik">Мельник</option>
-          <option value="avtoklav">Автоклавщик</option>
-        </select>
-      </div>
-      <div class="rinfo" id="rinfo"></div>
-    </div>
-    <!-- SETTINGS TOGGLE — hidden until role chosen -->
-    <div class="stog" id="stog" onclick="toggleSettings()" style="display:none;">
-      <span>⚙ Настройка графика</span>
-      <span class="sarr" id="sarr">▼</span>
-    </div>
-    <div class="sinner" id="sinner">
-      <div class="mrow">
-        <button class="mbtn on" id="mAuto"   onclick="setMode('auto')">⚡ Авто</button>
-        <button class="mbtn"    id="mManual" onclick="setMode('manual')">✏️ Вручную</button>
-      </div>
-      <div class="abox on" id="abox">
-        <div class="albl">Опорная дата и тип смены в этот день:</div>
-        <div class="arow">
-          <div class="afld"><label>Дата</label><input type="date" id="anchorDate"></div>
-          <div class="afld"><label>Тип смены</label>
-            <select class="ssel" id="anchorShift">
-              <option value="day">☀️ День</option>
-              <option value="night">🌙 Ночь</option>
-              <option value="off">🟢 Выходной</option>
-            </select>
-          </div>
-          <button class="abtn" onclick="applyAuto()">Построить</button>
-        </div>
-      </div>
-    </div>
+<div class="app-header">
+  <div class="app-header-top">
+    <span class="app-title">📅 График смен</span>
   </div>
-
-  <!-- КАЛЕНДАРЬ -->
-  <div class="card" id="calCard" style="display:none;">
-    <div class="ch">Календарь</div>
-    <div class="cb">
-      <div class="cal-nav">
-        <button class="nbtn" onclick="chMo(-1)">‹</button>
-        <div class="cal-mo" id="calMo"></div>
-        <button class="nbtn" onclick="chMo(1)">›</button>
-      </div>
-      <div class="cgrid" id="calGrid"></div>
-      <div class="legend">
-        <div class="li"><div class="ld" style="background:var(--day)"></div>День</div>
-        <div class="li"><div class="ld" style="background:var(--night)"></div>Ночь</div>
-        <div class="li"><div class="ld" style="background:var(--sleep)"></div>Отсыпной</div>
-        <div class="li"><div class="ld" style="background:var(--off)"></div>Выходной</div>
-        <div class="li"><div class="ld" style="background:var(--extra)"></div>Доп. смена</div>
-        <div class="li"><span style="color:var(--acc);font-size:.72rem;">★</span>&nbsp;Заметка</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ИТОГ -->
-  <div class="card" id="sumCard" style="display:none;">
-    <div class="ch">Итог месяца</div>
-    <div class="cb">
-      <div class="sgrid">
-        <div class="stile"><span class="sl">Дневных</span><span class="sv c-d" id="sDay">0</span><span class="ss" id="sDayH">0 ч</span></div>
-        <div class="stile"><span class="sl">Ночных</span><span class="sv c-n" id="sNight">0</span><span class="ss" id="sNightH">0 ч</span></div>
-        <div class="stile"><span class="sl">Итого ч</span><span class="sv c-a" id="sHours">0</span><span class="ss">часов</span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- З/П -->
-  <div class="card">
-    <div class="ch">Расчёт заработной платы</div>
-    <div class="cb" style="display:flex;flex-direction:column;gap:12px;">
-      <div>
-        <span class="slbl">Отработано часов</span>
-        <div class="srow">
-          <input class="ni" type="number" id="hoursInp" min="0" max="400" step="0.5" placeholder="0" oninput="calcSal()">
-          <span class="snote" id="hNote">← из графика или вручную</span>
-        </div>
-      </div>
-      <div class="divider"></div>
-      <div>
-        <span class="slbl">КТУ за месяц</span>
-        <div class="srow">
-          <input class="ni" type="number" id="ktuInp" min="0" max="10" step="0.01" placeholder="напр. 2.55" oninput="calcSal()">
-          <span class="snote">вводится вручную</span>
-        </div>
-      </div>
-      <div class="salr" id="salRes">
-        <div class="sall">Заработная плата</div>
-        <div class="sala" id="salAmt">—</div>
-        <div class="salc">российских рублей</div>
-        <div class="salf" id="salFml"></div>
-      </div>
-    </div>
-  </div>
-
+  <select class="position-select" id="positionSelect">
+    <option value="">— Выберите должность —</option>
+  <option value="РТС">РТС</option><option value="Прессовщик">Прессовщик</option><option value="Водитель склад">Водитель склад</option><option value="Водитель смена">Водитель смена</option><option value="Разнорабочий">Разнорабочий</option><option value="Упаковщик">Упаковщик</option><option value="Диспетчер">Диспетчер</option><option value="Начальник смены">Начальник смены</option><option value="Мельник">Мельник</option><option value="Автоклавщик">Автоклавщик</option></select>
 </div>
 
-<!-- MODAL -->
-<div class="mo" id="mo" onclick="moClose(event)">
-  <div class="mbox">
-    <div class="mt">
-      <span id="moTitle">День</span>
-      <button class="mclose" onclick="moCloseBtn()">✕</button>
+<div class="main">
+
+  <!-- CALENDAR CARD -->
+  <div class="card" id="calendarCard">
+    <div class="month-nav">
+      <button class="month-nav-btn" id="prevMonth">‹</button>
+      <div class="month-name" id="monthName">Апрель 2026</div>
+      <button class="month-nav-btn" id="nextMonth">›</button>
     </div>
-    <div class="spick">
-      <button class="spbtn sp-d" onclick="pickT('day')">☀️ День</button>
-      <button class="spbtn sp-n" onclick="pickT('night')">🌙 Ночь</button>
-      <button class="spbtn sp-s" onclick="pickT('sleep')">😴 Отсыпной</button>
-      <button class="spbtn sp-o" onclick="pickT('off')">🟢 Выходной</button>
-      <button class="spbtn sp-e" onclick="pickT('extra')">⚡ Доп. смена</button>
+
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="modeSchedule" data-mode="schedule">📅 По графику</button>
+      <button class="mode-btn" id="modeManual" data-mode="manual">✏️ Вручную</button>
     </div>
-    <div class="edur" id="edur">
-      <label>Длит. доп. смены:</label>
-      <button class="edbtn on" id="ed12" onclick="pickED(12)">12ч (→11 зач.)</button>
-      <button class="edbtn"   id="ed9"  onclick="pickED(9)">9ч (→8 зач.)</button>
+
+    <div class="calendar-wrap">
+      <div class="calendar-grid" id="calendarGrid"><div class="day-header">Пн</div><div class="day-header">Вт</div><div class="day-header">Ср</div><div class="day-header">Чт</div><div class="day-header">Пт</div><div class="day-header">Сб</div><div class="day-header">Вс</div><div class="day-cell empty"></div><div class="day-cell empty"></div><div class="day-cell shift-none" onclick="openModal(1)">
+      
+      <div class="day-num">1</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(2)">
+      
+      <div class="day-num">2</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(3)">
+      
+      <div class="day-num">3</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(4)">
+      
+      <div class="day-num">4</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(5)">
+      
+      <div class="day-num">5</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(6)">
+      
+      <div class="day-num">6</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(7)">
+      
+      <div class="day-num">7</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(8)">
+      
+      <div class="day-num">8</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none today" onclick="openModal(9)">
+      
+      <div class="day-num">9</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(10)">
+      
+      <div class="day-num">10</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(11)">
+      
+      <div class="day-num">11</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(12)">
+      
+      <div class="day-num">12</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(13)">
+      
+      <div class="day-num">13</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(14)">
+      
+      <div class="day-num">14</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(15)">
+      
+      <div class="day-num">15</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(16)">
+      
+      <div class="day-num">16</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(17)">
+      
+      <div class="day-num">17</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(18)">
+      
+      <div class="day-num">18</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(19)">
+      
+      <div class="day-num">19</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(20)">
+      
+      <div class="day-num">20</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(21)">
+      
+      <div class="day-num">21</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(22)">
+      
+      <div class="day-num">22</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(23)">
+      
+      <div class="day-num">23</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(24)">
+      
+      <div class="day-num">24</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(25)">
+      
+      <div class="day-num">25</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(26)">
+      
+      <div class="day-num">26</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(27)">
+      
+      <div class="day-num">27</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(28)">
+      
+      <div class="day-num">28</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(29)">
+      
+      <div class="day-num">29</div>
+      <div class="day-label"></div>
+    </div><div class="day-cell shift-none" onclick="openModal(30)">
+      
+      <div class="day-num">30</div>
+      <div class="day-label"></div>
+    </div></div>
     </div>
-    <div class="mhrow">
-      <label>Зачётных часов:</label>
-      <input class="mhi" type="number" id="mHrs" min="0" max="24" step="0.5">
-      <span class="mhnote" id="mHNote"></span>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#FDE68A;border:1.5px solid #d97706"></div>День</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#93C5FD;border:1.5px solid #1d4ed8"></div>Ночь</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#C4B5FD;border:1.5px solid #6d28d9"></div>Отсыпной</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#86EFAC;border:1.5px solid #15803d"></div>Выходной</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#F9A8D4;border:1.5px solid #be185d"></div>Доп. смена</div>
     </div>
-    <div class="nlbl">★ Заметка к дню</div>
-    <textarea class="noteinp" id="mNote" placeholder="Опоздал, ушёл раньше, замена..."></textarea>
-    <button class="msave" onclick="saveDay()">✓ Сохранить</button>
+
+    <div class="settings-toggle-row">
+      <button class="toggle-btn" id="settingsToggle">
+        <span>⚙️</span>
+        <span>Настройка графика</span>
+        <i class="chevron" id="settingsChevron">▾</i>
+      </button>
+    </div>
+
+    <div class="collapsible" id="settingsPanel">
+      <div class="settings-panel">
+        <div id="autoSettingsBlock">
+          <div class="field-label">Дата начала цикла</div>
+          <input type="date" class="input-field" id="cycleStartDate" style="margin-bottom:10px">
+          <div class="field-label">Тип смены в эту дату</div>
+          <select class="input-field" id="cycleStartType" style="margin-bottom:12px"><option value="">— нет (5×2 = авто) —</option></select>
+          <button class="btn-primary" id="applyAutoBtn">Применить к графику</button>
+          <div id="cycleInfo" style="margin-top:10px; display:none"></div>
+        </div>
+        <div class="divider"></div>
+        <button class="btn-danger" id="clearMonthBtn">Очистить ручные правки этого месяца</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY CARD -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Итоги месяца</h2>
+      <span class="card-badge" id="summaryBadge">График</span>
+    </div>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="summary-value" id="sumWorkDays">0</div>
+        <div class="summary-label">Раб. дней</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value" id="sumHours">0</div>
+        <div class="summary-label">Часов (зачёт)</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-value" id="sumNights">0</div>
+        <div class="summary-label">Ночных</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SALARY CARD -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Расчёт зарплаты</h2>
+    </div>
+    <div class="calc-section">
+
+      <div id="manualHoursBlock" style="display:none">
+        <div class="field-label">Часов за месяц (без графика)</div>
+        <input type="number" class="input-field" id="manualHoursInput" placeholder="Введите часы" min="0" max="400" step="0.5">
+      </div>
+
+      <div class="calc-row" id="hoursCalcRow">
+        <span class="calc-row-label">Часов (зачёт)</span>
+        <span class="calc-row-value" id="calcHoursVal">0</span>
+      </div>
+
+      <div class="calc-row">
+        <span class="calc-row-label">Оклад</span>
+        <span class="calc-row-value" id="calcSalaryBase">—</span>
+      </div>
+
+      <div class="calc-row">
+        <span class="calc-row-label">Норма часов</span>
+        <span class="calc-row-value">165 ч</span>
+      </div>
+
+      <div>
+        <div class="field-label">КТУ (коэффициент трудового участия)</div>
+        <input type="number" class="input-field" id="ktuInput" placeholder="Например: 2.55" min="0" max="10" step="0.01">
+      </div>
+
+    </div>
+
+    <div class="salary-card" id="salaryCard">
+      <div class="salary-label-text" id="salaryLabelText">ВЫБЕРИТЕ ДОЛЖНОСТЬ</div>
+      <div class="salary-amount" id="salaryAmount">—</div>
+      <div class="salary-formula" id="salaryFormula"></div>
+    </div>
+  </div>
+
+  <div class="bottom-space"></div>
+</div>
+
+<!-- DAY EDITOR MODAL -->
+<div class="modal-overlay hidden" id="dayModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalTitle">1 апреля</div>
+    <div class="modal-date-info" id="modalDateInfo">понедельник</div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Тип смены</div>
+      <div class="shift-grid" id="shiftGrid">
+        <button class="shift-btn shift-day" data-type="day">
+          <span class="shift-btn-icon">☀️</span>
+          <span class="shift-btn-label">День</span>
+          <span class="shift-btn-hours" id="shiftHintDay"></span>
+        </button>
+        <button class="shift-btn shift-night" data-type="night">
+          <span class="shift-btn-icon">🌙</span>
+          <span class="shift-btn-label">Ночь</span>
+          <span class="shift-btn-hours" id="shiftHintNight"></span>
+        </button>
+        <button class="shift-btn shift-sleep" data-type="sleep">
+          <span class="shift-btn-icon">😴</span>
+          <span class="shift-btn-label">Отсыпной</span>
+          <span class="shift-btn-hours">0 ч</span>
+        </button>
+        <button class="shift-btn shift-off" data-type="off">
+          <span class="shift-btn-icon">🟢</span>
+          <span class="shift-btn-label">Выходной</span>
+          <span class="shift-btn-hours">0 ч</span>
+        </button>
+        <button class="shift-btn shift-extra" data-type="extra">
+          <span class="shift-btn-icon">⚡</span>
+          <span class="shift-btn-label">Доп. смена</span>
+          <span class="shift-btn-hours">по выбору</span>
+        </button>
+        <button class="shift-btn shift-none" data-type="none">
+          <span class="shift-btn-icon">—</span>
+          <span class="shift-btn-label">Не задан</span>
+          <span class="shift-btn-hours">0 ч</span>
+        </button>
+      </div>
+
+      <div id="extraDurSection" style="display:none; margin-top:10px;">
+        <div class="field-label" style="margin-bottom:6px">Длительность доп. смены</div>
+        <div class="extra-dur-row">
+          <button class="extra-dur-btn active" data-edur="12">12 ч → 11 зачёт</button>
+          <button class="extra-dur-btn" data-edur="9">9 ч → 8 зачёт</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-section" id="hoursSection">
+      <div class="modal-section-title">Фактические часы (зачёт)</div>
+      <div class="hours-adjuster">
+        <button class="adj-btn" id="hoursDown">−</button>
+        <input class="adj-input" type="number" id="hoursInput" min="0" max="24" step="0.5">
+        <button class="adj-btn" id="hoursUp">+</button>
+      </div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:6px">
+        Можно изменить, если работали не полную смену
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Заметка</div>
+      <textarea class="input-field" id="noteInput" placeholder="Заметка к этому дню (необязательно)..."></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-primary" id="saveDayBtn">Сохранить</button>
+      <button class="btn-secondary" id="cancelDayBtn">Отмена</button>
+    </div>
   </div>
 </div>
 
 <script>
-// ── CONSTANTS ──────────────────────────────────────────────
-const ROLES={
-  pressovsh:  {name:'Прессовщик',      oklad:33850,sch:'2x2d', dh:11},
-  vod_sklad:  {name:'Водитель (склад)',oklad:34500,sch:'5x2',  dh:8},
-  vod_smen:   {name:'Водитель (смена)',oklad:34500,sch:'2x2d', dh:11},
-  raznorab:   {name:'Разнорабочий',    oklad:33850,sch:'5x2',  dh:8},
-  upakovsh:   {name:'Упаковщик',       oklad:33850,sch:'2x2d', dh:11},
-  dispetcher: {name:'Диспетчер',       oklad:34500,sch:'2x2d', dh:11},
-  nach_smen:  {name:'Нач. смены',      oklad:37500,sch:'2x2dn',dh:11},
-  melnik:     {name:'Мельник',         oklad:33850,sch:'2x2dn',dh:11},
-  avtoklav:   {name:'Автоклавщик',     oklad:33850,sch:'avto', dh:11},
+// ─── POSITIONS ────────────────────────────────────────────────────────────────
+const POSITIONS = {
+  'РТС': {
+    salary: 33850, hoursPerShift: 11, shiftHours: 12,
+    cycleType: 'cyclic', cycle: ['day','day','off','off'],
+    dayTimeWD: '11:00', dayTimeWE: '09:00',
+    hasNight: false, hasSleep: false, is5x2: false
+  },
+  'Прессовщик': {
+    salary: 33850, hoursPerShift: 11, shiftHours: 12,
+    cycleType: 'cyclic', cycle: ['day','day','off','off'],
+    dayTimeWD: '11:00', dayTimeWE: '09:00',
+    hasNight: false, hasSleep: false, is5x2: false
+  },
+  'Водитель склад': {
+    salary: 34500, hoursPerShift: 8, shiftHours: 9,
+    cycleType: '5x2',
+    hasNight: false, hasSleep: false, is5x2: true
+  },
+  'Водитель смена': {
+    salary: 34500, hoursPerShift: 11, shiftHours: 12,
+    cycleType: 'cyclic', cycle: ['day','day','off','off'],
+    dayTimeWD: '11:00', dayTimeWE: '09:00',
+    hasNight: false, hasSleep: false, is5x2: false
+  },
+  'Разнорабочий': {
+    salary: 33850, hoursPerShift: 8, shiftHours: 9,
+    cycleType: '5x2',
+    hasNight: false, hasSleep: false, is5x2: true
+  },
+  'Упаковщик': {
+    salary: 33850, hoursPerShift: 11, shiftHours: 12,
+    cycleType: 'cyclic', cycle: ['day','day','off','off'],
+    dayTimeCustom: true,
+    hasNight: false, hasSleep: false, is5x2: false
+  },
+  'Диспетчер': {
+    salary: 34500, hoursPerShift: 11, shiftHours: 12,
+    cycleType: 'cyclic', cycle: ['day','day','off','off'],
+    dayTimeWD: '11:00', dayTimeWE: '09:00',
+    hasNight: false, hasSleep: false, is5x2: false
+  },
+  'Начальник смены': {
+    salary: 37500, hoursPerShift: 11, shiftHours: 12,
+    cycleType: 'cyclic', cycle: ['day','day','off','off','night','night','off','off'],
+    dayTimeWD: '11:00', dayTimeWE: '09:00',
+    nightTimeWD: '23:00', nightTimeWE: '21:00',
+    hasNight: true, hasSleep: false, is5x2: false
+  },
+  'Мельник': {
+    salary: 33850, hoursPerShift: 11, shiftHours: 12,
+    cycleType: 'cyclic', cycle: ['day','day','off','off','night','night','off','off'],
+    dayTimeWD: '11:00', dayTimeWE: '09:00',
+    nightTimeWD: '23:00', nightTimeWE: '21:00',
+    hasNight: true, hasSleep: false, is5x2: false
+  },
+  'Автоклавщик': {
+    salary: 33850, hoursPerShift: 11, shiftHours: 12,
+    cycleType: 'cyclic', cycle: ['day','night','sleep','off'],
+    dayTime: '09:00', nightTime: '21:00',
+    hasNight: true, hasSleep: true, is5x2: false
+  }
 };
-// D=day N=night S=sleep O=off
-const SCHEDS={'2x2d':['D','D','O','O'],'2x2dn':['D','D','O','O','N','N','O','O'],'avto':['D','N','S','O']};
-const SL={day:'День',night:'Ночь',sleep:'Отсыпной',off:'Выходной',extra:'Доп.'};
-const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-const DOWS=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 
-// ── STATE ──────────────────────────────────────────────────
-const REAL_TODAY=new Date();
-const TODAY=fd(REAL_TODAY);
+const SHIFT_LABEL = { day:'День', night:'Ночь', sleep:'Отсыпной', off:'Выходной', extra:'Доп.', none:'' };
+const SHIFT_CLASS = { day:'shift-day', night:'shift-night', sleep:'shift-sleep', off:'shift-off', extra:'shift-extra', none:'shift-none' };
+const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const MONTH_NAMES_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const DAY_NAMES_LONG = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+const DAY_NAMES_HEADER = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 
-let VY=REAL_TODAY.getFullYear(), VM=REAL_TODAY.getMonth(); // view year/month
-
-let S={
-  role:'',mode:'auto',
-  anchorDate:'',anchorType:'day',
-  settingsOpen:false,
-  days:{},          // 'YYYY-MM-DD':{type,hours,ed,note,_auto}
-  hoursInp:'',ktuInp:''
+// ─── STATE ────────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'zp_calc_v3';
+let state = {
+  position: '',
+  mode: 'schedule',
+  year: new Date().getFullYear(),
+  month: new Date().getMonth(),
+  cycleStartDate: '',
+  cycleStartType: '',
+  months: {}
 };
 
-function fd(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());}
-function p2(n){return String(n).padStart(2,'0');}
-function dim(y,m){return new Date(y,m+1,0).getDate();}
-function fmt(n){return Math.round(n).toLocaleString('ru-RU');}
-function isWknd(y,m,d){const w=new Date(y,m,d).getDay();return w===0||w===6;}
-
-// ── STORAGE ────────────────────────────────────────────────
-function save(){try{localStorage.setItem('sched5',JSON.stringify({...S,vy:VY,vm:VM}));}catch(e){}}
-function load(){
-  try{
-    const r=localStorage.getItem('sched5');
-    if(!r)return;
-    const p=JSON.parse(r);
-    Object.assign(S,p);
-    if(p.vy!==undefined)VY=p.vy;
-    if(p.vm!==undefined)VM=p.vm;
-  }catch(e){}
+function loadState() {
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    if (s) { const p = JSON.parse(s); Object.assign(state, p); }
+  } catch(e) {}
 }
 
-// ── SETTINGS TOGGLE ────────────────────────────────────────
-function toggleSettings(){
-  S.settingsOpen=!S.settingsOpen;
-  applySettingsUI();
-  save();
-}
-function applySettingsUI(){
-  document.getElementById('sinner').classList.toggle('on',S.settingsOpen);
-  document.getElementById('sarr').classList.toggle('open',S.settingsOpen);
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
 }
 
-// ── ROLE ───────────────────────────────────────────────────
-function onRole(){
-  const rid=document.getElementById('roleSelect').value;
-  S.role=rid; save();
-  const stog=document.getElementById('stog');
-  if(!rid){
-    document.getElementById('calCard').style.display='none';
-    document.getElementById('sumCard').style.display='none';
-    stog.style.display='none';
-    document.getElementById('rinfo').textContent='';
-    calcSal(); return;
+function monthKey(y, m) { return `${y}-${String(m+1).padStart(2,'0')}`; }
+
+function monthData(y, m) {
+  const k = monthKey(y, m);
+  if (!state.months[k]) state.months[k] = { ktu: null, manualHours: null, cells: {} };
+  return state.months[k];
+}
+
+function cellKey(y, m, d) { return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+
+// ─── SCHEDULE LOGIC ───────────────────────────────────────────────────────────
+function isWeekend(y, m, d) { const dow = new Date(y,m,d).getDay(); return dow===0||dow===6; }
+function dayOfWeek(y, m, d) { return new Date(y,m,d).getDay(); }
+
+function autoShift(pos, y, m, d) {
+  if (!pos || !state.cycleStartDate || !state.cycleStartType) return null;
+  const cfg = POSITIONS[pos];
+  if (!cfg) return null;
+
+  if (cfg.is5x2) {
+    const dow = dayOfWeek(y, m, d);
+    return (dow===0||dow===6) ? 'off' : 'day';
   }
-  const r=ROLES[rid];
-  document.getElementById('rinfo').textContent='Оклад: '+fmt(r.oklad)+' ₽  ·  '+r.name;
-  document.getElementById('calCard').style.display='';
-  document.getElementById('sumCard').style.display='';
-  stog.style.display='';
 
-  // anchor shift options
-  const as=document.getElementById('anchorShift');
-  if(r.sch==='2x2dn'){
-    as.innerHTML='<option value="day">☀️ День</option><option value="night">🌙 Ночь</option><option value="off">🟢 Выходной</option>';
-  } else if(r.sch==='avto'){
-    as.innerHTML='<option value="day">☀️ День</option><option value="night">🌙 Ночь</option><option value="sleep">😴 Отсыпной</option><option value="off">🟢 Выходной</option>';
+  if (cfg.cycleType === 'cyclic') {
+    const cycle = cfg.cycle;
+    const startIdx = cycle.indexOf(state.cycleStartType);
+    if (startIdx === -1) return null;
+    const startDate = new Date(state.cycleStartDate);
+    const target = new Date(y, m, d);
+    const diff = Math.round((target - startDate) / 86400000);
+    const idx = ((startIdx + diff) % cycle.length + cycle.length) % cycle.length;
+    return cycle[idx];
+  }
+  return null;
+}
+
+function effectiveShift(pos, y, m, d) {
+  const md = monthData(y, m);
+  const ck = cellKey(y, m, d);
+  if (md.cells[ck]) return md.cells[ck].type;
+  if (state.mode === 'schedule') return autoShift(pos, y, m, d) || 'none';
+  return 'none';
+}
+
+function shiftHours(pos, type, extraDur) {
+  if (!pos) return 0;
+  const cfg = POSITIONS[pos];
+  if (!cfg) return 0;
+  switch(type) {
+    case 'day': return cfg.hoursPerShift;
+    case 'night': return cfg.hoursPerShift;
+    case 'sleep': return 0;
+    case 'off': return 0;
+    case 'extra': return extraDur === '9' ? 8 : 11;
+    default: return 0;
+  }
+}
+
+function monthStats(pos, y, m) {
+  if (!pos) return { hours:0, workDays:0, nights:0 };
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const md = monthData(y, m);
+  let hours=0, workDays=0, nights=0;
+  for (let d=1; d<=daysInMonth; d++) {
+    const ck = cellKey(y, m, d);
+    let type, h;
+    if (md.cells[ck]) {
+      const cell = md.cells[ck];
+      type = cell.type;
+      h = (cell.hours !== null && cell.hours !== undefined) ? cell.hours : shiftHours(pos, type, cell.extraDur);
+    } else {
+      type = autoShift(pos, y, m, d) || 'none';
+      h = shiftHours(pos, type, null);
+    }
+    if (type !== 'off' && type !== 'sleep' && type !== 'none') { workDays++; hours += h; }
+    if (type === 'night') nights++;
+  }
+  return { hours, workDays, nights };
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function renderAll() {
+  renderMonthHeader();
+  renderCalendar();
+  renderSummary();
+  renderSalary();
+  restoreInputs();
+  updateShiftHints();
+}
+
+function renderMonthHeader() {
+  document.getElementById('monthName').textContent = `${MONTH_NAMES[state.month]} ${state.year}`;
+}
+
+function renderCalendar() {
+  const grid = document.getElementById('calendarGrid');
+  const y = state.year, m = state.month;
+  const today = new Date();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const md = monthData(y, m);
+
+  let html = DAY_NAMES_HEADER.map(n => `<div class="day-header">${n}</div>`).join('');
+
+  const firstDow = new Date(y, m, 1).getDay();
+  const offset = firstDow === 0 ? 6 : firstDow - 1;
+  for (let i=0; i<offset; i++) html += '<div class="day-cell empty"></div>';
+
+  for (let d=1; d<=daysInMonth; d++) {
+    const ck = cellKey(y, m, d);
+    const isToday = today.getFullYear()===y && today.getMonth()===m && today.getDate()===d;
+    const cellData = md.cells[ck];
+    const isManualOverride = !!cellData;
+
+    let type = 'none';
+    if (cellData) { type = cellData.type; }
+    else if (state.mode === 'schedule' && state.position) { type = autoShift(state.position, y, m, d) || 'none'; }
+
+    const hasNote = cellData && cellData.note && cellData.note.trim();
+    const shClass = SHIFT_CLASS[type] || 'shift-none';
+    const lbl = SHIFT_LABEL[type] || '';
+    const todayCls = isToday ? ' today' : '';
+    const noteMark = hasNote ? '<span class="day-note-mark">✱</span>' : '';
+    const modMark = (isManualOverride && !cellData?.isAuto) ? '' : '';
+
+    html += `<div class="day-cell ${shClass}${todayCls}" onclick="openModal(${d})">
+      ${noteMark}
+      <div class="day-num">${d}</div>
+      <div class="day-label">${lbl}</div>
+    </div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+function renderSummary() {
+  const stats = monthStats(state.position, state.year, state.month);
+  document.getElementById('sumWorkDays').textContent = stats.workDays;
+  document.getElementById('sumHours').textContent = stats.hours;
+  document.getElementById('sumNights').textContent = stats.nights;
+  document.getElementById('summaryBadge').textContent = state.mode === 'schedule' ? 'График' : 'Вручную';
+  document.getElementById('calcHoursVal').textContent = state.mode === 'manual'
+    ? (monthData(state.year, state.month).manualHours || 0)
+    : stats.hours;
+}
+
+function renderSalary() {
+  const pos = state.position;
+  const cfg = pos ? POSITIONS[pos] : null;
+  const salary = cfg ? cfg.salary : null;
+  document.getElementById('calcSalaryBase').textContent = salary ? `${salary.toLocaleString('ru-RU')} ₽` : '—';
+
+  const md = monthData(state.year, state.month);
+  const ktu = md.ktu;
+
+  let hours;
+  if (state.mode === 'manual') {
+    hours = md.manualHours || 0;
   } else {
-    as.innerHTML='<option value="day">☀️ День</option><option value="off">🟢 Выходной</option>';
+    hours = monthStats(pos, state.year, state.month).hours;
   }
-  if(S.anchorType) as.value=S.anchorType;
 
-  applySettingsUI();
-  autoFillIfEmpty(VY,VM);
-  renderCal();
-  calcSal();
+  if (!salary || !hours) {
+    document.getElementById('salaryAmount').textContent = '—';
+    document.getElementById('salaryLabelText').textContent = salary ? 'ЗАПОЛНИТЕ ЧАСЫ' : 'ВЫБЕРИТЕ ДОЛЖНОСТЬ';
+    document.getElementById('salaryFormula').textContent = '';
+    return;
+  }
+
+  const k = ktu || 1;
+  const result = Math.round(salary * k / 165 * hours);
+  document.getElementById('salaryAmount').textContent = result.toLocaleString('ru-RU') + ' ₽';
+  document.getElementById('salaryLabelText').textContent = ktu ? `ЗАРПЛАТА (КТУ = ${ktu})` : 'ЗАРПЛАТА (КТУ = 1)';
+  document.getElementById('salaryFormula').textContent = `${salary.toLocaleString('ru-RU')} × ${k} ÷ 165 × ${hours} ч`;
 }
 
-// ── MODE ───────────────────────────────────────────────────
-function setMode(m){
-  S.mode=m; save();
-  document.getElementById('mAuto').classList.toggle('on',m==='auto');
-  document.getElementById('mManual').classList.toggle('on',m==='manual');
-  document.getElementById('abox').classList.toggle('on',m==='auto');
-}
+function restoreInputs() {
+  const md = monthData(state.year, state.month);
+  const ktuEl = document.getElementById('ktuInput');
+  ktuEl.value = md.ktu !== null ? md.ktu : '';
 
-// ── AUTO BUILD ─────────────────────────────────────────────
-function buildMonth(y,mo){
-  const rid=S.role; if(!rid||!S.anchorDate) return;
-  const r=ROLES[rid];
-  const total=dim(y,mo);
-  const anchorD=new Date(S.anchorDate+'T12:00:00');
-  const t2c={day:'D',night:'N',off:'O',sleep:'S'};
+  const mhEl = document.getElementById('manualHoursInput');
+  mhEl.value = md.manualHours !== null ? md.manualHours : '';
 
-  if(r.sch==='5x2'){
-    for(let d=1;d<=total;d++){
-      const key=fd(new Date(y,mo,d));
-      if(S.days[key]&&!S.days[key]._auto)continue; // keep manual edits
-      const off=isWknd(y,mo,d);
-      S.days[key]={type:off?'off':'day',hours:off?0:r.dh,ed:12,_auto:true,note:S.days[key]?.note||''};
-    }
+  document.getElementById('cycleStartDate').value = state.cycleStartDate || '';
+  document.getElementById('cycleStartType').value = state.cycleStartType || '';
+
+  const manualBlock = document.getElementById('manualHoursBlock');
+  const hoursCalcRow = document.getElementById('hoursCalcRow');
+  if (state.mode === 'manual') {
+    manualBlock.style.display = '';
+    hoursCalcRow.style.display = 'none';
   } else {
-    const cyc=SCHEDS[r.sch]; if(!cyc)return;
-    const ac=t2c[S.anchorType]||'D';
-    let ai=cyc.indexOf(ac); if(ai<0)ai=0;
-    for(let d=1;d<=total;d++){
-      const key=fd(new Date(y,mo,d));
-      if(S.days[key]&&!S.days[key]._auto)continue;
-      const diff=Math.round((new Date(y,mo,d)-anchorD)/86400000);
-      const pos=((ai+diff)%cyc.length+cyc.length)%cyc.length;
-      const code=cyc[pos];
-      let type,hours;
-      if(code==='D'){type='day';hours=r.dh;}
-      else if(code==='N'){type='night';hours=r.dh;}
-      else if(code==='S'){type='sleep';hours=0;}
-      else{type='off';hours=0;}
-      S.days[key]={type,hours,ed:12,_auto:true,note:S.days[key]?.note||''};
+    manualBlock.style.display = 'none';
+    hoursCalcRow.style.display = '';
+  }
+
+  document.getElementById('modeSchedule').classList.toggle('active', state.mode === 'schedule');
+  document.getElementById('modeManual').classList.toggle('active', state.mode === 'manual');
+
+  updateCycleTypeOptions();
+  updateCycleInfo();
+}
+
+function updateShiftHints() {
+  const pos = state.position;
+  const cfg = pos ? POSITIONS[pos] : null;
+  if (cfg) {
+    document.getElementById('shiftHintDay').textContent = cfg.hoursPerShift + ' ч зачёт';
+    document.getElementById('shiftHintNight').textContent = cfg.hoursPerShift + ' ч зачёт';
+  }
+}
+
+function updateCycleTypeOptions() {
+  const pos = state.position;
+  const cfg = pos ? POSITIONS[pos] : null;
+  const sel = document.getElementById('cycleStartType');
+  const cur = sel.value;
+
+  if (!cfg || cfg.is5x2) {
+    sel.innerHTML = '<option value="">— нет (5×2 = авто) —</option>';
+    return;
+  }
+
+  const types = [...new Set(cfg.cycle || [])];
+  const icons = { day:'☀️ День', night:'🌙 Ночь', sleep:'😴 Отсыпной', off:'🟢 Выходной' };
+  let html = '<option value="">— выберите тип —</option>';
+  types.forEach(t => { html += `<option value="${t}">${icons[t]||t}</option>`; });
+  sel.innerHTML = html;
+  if (cur) sel.value = cur;
+}
+
+function updateCycleInfo() {
+  const el = document.getElementById('cycleInfo');
+  const pos = state.position;
+  const cfg = pos ? POSITIONS[pos] : null;
+  if (!cfg || !state.cycleStartDate || !state.cycleStartType) { el.style.display='none'; return; }
+  el.style.display='';
+  el.innerHTML = `<div class="info-box">
+    Цикл: <strong>${(cfg.cycle||['день','выходной']).map(t=>SHIFT_LABEL[t]||t).join(' → ')}</strong><br>
+    Дата начала: <strong>${state.cycleStartDate}</strong>, смена: <strong>${SHIFT_LABEL[state.cycleStartType]||state.cycleStartType}</strong>
+  </div>`;
+}
+
+// ─── MODAL ────────────────────────────────────────────────────────────────────
+let editDay = null;
+
+function openModal(d) {
+  editDay = d;
+  const y = state.year, m = state.month;
+  const date = new Date(y, m, d);
+  const dow = DAY_NAMES_LONG[date.getDay()];
+
+  document.getElementById('modalTitle').textContent = `${d} ${MONTH_NAMES_GEN[m]}`;
+  document.getElementById('modalDateInfo').textContent = `${dow}${isWeekend(y,m,d) ? ' · выходной день' : ''}`;
+
+  const md = monthData(y, m);
+  const ck = cellKey(y, m, d);
+  const cell = md.cells[ck];
+  const autoType = autoShift(state.position, y, m, d);
+  const curType = cell ? cell.type : (state.mode==='schedule' ? (autoType||'none') : 'none');
+  const curNote = cell ? (cell.note||'') : '';
+  const curExtraDur = cell ? (cell.extraDur||'12') : '12';
+  const curHours = (cell && cell.hours !== null && cell.hours !== undefined)
+    ? cell.hours
+    : shiftHours(state.position, curType, curExtraDur);
+
+  // Reset shift buttons
+  document.querySelectorAll('.shift-btn').forEach(b => {
+    b.classList.remove('active');
+    if (b.dataset.type === curType) b.classList.add('active');
+  });
+
+  // Extra dur
+  document.querySelectorAll('.extra-dur-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.edur === curExtraDur);
+  });
+  document.getElementById('extraDurSection').style.display = curType==='extra' ? '' : 'none';
+
+  // Hours
+  const showH = curType!=='off' && curType!=='sleep' && curType!=='none';
+  document.getElementById('hoursSection').style.display = showH ? '' : 'none';
+  document.getElementById('hoursInput').value = showH ? curHours : '';
+
+  document.getElementById('noteInput').value = curNote;
+  document.getElementById('dayModal').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('dayModal').classList.add('hidden');
+  editDay = null;
+}
+
+function saveDay() {
+  if (editDay === null) return;
+  const y = state.year, m = state.month, d = editDay;
+  const md = monthData(y, m);
+  const ck = cellKey(y, m, d);
+
+  const type = document.querySelector('.shift-btn.active')?.dataset.type || 'none';
+  const extraDur = document.querySelector('.extra-dur-btn.active')?.dataset.edur || '12';
+  const note = document.getElementById('noteInput').value.trim();
+  const hoursRaw = parseFloat(document.getElementById('hoursInput').value);
+  const defHours = shiftHours(state.position, type, extraDur);
+  const hours = (isNaN(hoursRaw) || type==='off' || type==='sleep' || type==='none') ? defHours : hoursRaw;
+
+  // If matches auto and no note — remove override
+  const autoType = autoShift(state.position, y, m, d);
+  const hoursMatch = Math.abs(hours - defHours) < 0.01;
+  if (type === (autoType||'none') && hoursMatch && !note && state.mode==='schedule') {
+    delete md.cells[ck];
+  } else {
+    md.cells[ck] = { type, hours: (type==='off'||type==='sleep'||type==='none') ? 0 : hours, note, extraDur };
+  }
+
+  saveState();
+  closeModal();
+  renderAll();
+}
+
+// ─── EVENTS ───────────────────────────────────────────────────────────────────
+document.getElementById('positionSelect').addEventListener('change', function() {
+  state.position = this.value;
+  saveState();
+  renderAll();
+});
+
+document.getElementById('prevMonth').addEventListener('click', () => {
+  if (state.month===0) { state.month=11; state.year--; } else state.month--;
+  renderAll();
+});
+document.getElementById('nextMonth').addEventListener('click', () => {
+  if (state.month===11) { state.month=0; state.year++; } else state.month++;
+  renderAll();
+});
+
+document.getElementById('modeSchedule').addEventListener('click', () => {
+  state.mode = 'schedule'; saveState(); renderAll();
+});
+document.getElementById('modeManual').addEventListener('click', () => {
+  state.mode = 'manual'; saveState(); renderAll();
+});
+
+document.getElementById('settingsToggle').addEventListener('click', () => {
+  const panel = document.getElementById('settingsPanel');
+  const chevron = document.getElementById('settingsChevron');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  chevron.classList.toggle('open', !isOpen);
+});
+
+document.getElementById('applyAutoBtn').addEventListener('click', () => {
+  const sd = document.getElementById('cycleStartDate').value;
+  const st = document.getElementById('cycleStartType').value;
+  if (!sd || (!st && !POSITIONS[state.position]?.is5x2)) {
+    alert('Выберите дату и тип смены'); return;
+  }
+  state.cycleStartDate = sd;
+  state.cycleStartType = st;
+  saveState();
+  updateCycleInfo();
+  renderAll();
+  document.getElementById('settingsPanel').classList.remove('open');
+  document.getElementById('settingsChevron').classList.remove('open');
+});
+
+document.getElementById('clearMonthBtn').addEventListener('click', () => {
+  if (!confirm('Очистить все ручные правки этого месяца?')) return;
+  const md = monthData(state.year, state.month);
+  md.cells = {};
+  saveState();
+  renderAll();
+});
+
+document.getElementById('ktuInput').addEventListener('input', function() {
+  const v = parseFloat(this.value);
+  monthData(state.year, state.month).ktu = isNaN(v) ? null : v;
+  saveState();
+  renderSalary();
+  renderSummary();
+});
+
+document.getElementById('manualHoursInput').addEventListener('input', function() {
+  const v = parseFloat(this.value);
+  monthData(state.year, state.month).manualHours = isNaN(v) ? null : v;
+  saveState();
+  renderSummary();
+  renderSalary();
+});
+
+document.getElementById('cycleStartDate').addEventListener('change', function() {
+  state.cycleStartDate = this.value;
+});
+document.getElementById('cycleStartType').addEventListener('change', function() {
+  state.cycleStartType = this.value;
+});
+
+// Shift buttons in modal
+document.querySelectorAll('.shift-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.shift-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    const type = this.dataset.type;
+    const showH = type!=='off' && type!=='sleep' && type!=='none';
+    document.getElementById('hoursSection').style.display = showH ? '' : 'none';
+    document.getElementById('extraDurSection').style.display = type==='extra' ? '' : 'none';
+    if (showH) {
+      const dur = document.querySelector('.extra-dur-btn.active')?.dataset.edur || '12';
+      document.getElementById('hoursInput').value = shiftHours(state.position, type, dur);
     }
-  }
-}
+  });
+});
 
-function autoFillIfEmpty(y,mo){
-  if(!S.role||!S.anchorDate||S.mode!=='auto')return;
-  const total=dim(y,mo);
-  for(let d=1;d<=total;d++){
-    if(S.days[fd(new Date(y,mo,d))]){return;} // already has data
-  }
-  buildMonth(y,mo);
-  save();
-}
+// Extra duration buttons
+document.querySelectorAll('.extra-dur-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.extra-dur-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('hoursInput').value = this.dataset.edur === '9' ? 8 : 11;
+  });
+});
 
-function applyAuto(){
-  if(!S.role){alert('Выберите должность');return;}
-  const av=document.getElementById('anchorDate').value;
-  if(!av){alert('Укажите опорную дату');return;}
-  S.anchorDate=av;
-  S.anchorType=document.getElementById('anchorShift').value;
-  // Clear auto cells for current month and rebuild
-  const total=dim(VY,VM);
-  for(let d=1;d<=total;d++){
-    const key=fd(new Date(VY,VM,d));
-    if(!S.days[key]||S.days[key]._auto) delete S.days[key];
-  }
-  buildMonth(VY,VM);
-  save(); renderCal(); updateSum(); calcSal();
-}
+document.getElementById('hoursDown').addEventListener('click', () => {
+  const inp = document.getElementById('hoursInput');
+  inp.value = Math.max(0, (parseFloat(inp.value)||0) - 0.5);
+});
+document.getElementById('hoursUp').addEventListener('click', () => {
+  const inp = document.getElementById('hoursInput');
+  inp.value = Math.min(24, (parseFloat(inp.value)||0) + 0.5);
+});
 
-// ── MONTH NAV ──────────────────────────────────────────────
-function chMo(delta){
-  VM+=delta;
-  if(VM>11){VM=0;VY++;}
-  if(VM<0) {VM=11;VY--;}
-  save();
-  autoFillIfEmpty(VY,VM);
-  renderCal();
-  updateSum();
-}
+document.getElementById('saveDayBtn').addEventListener('click', saveDay);
+document.getElementById('cancelDayBtn').addEventListener('click', closeModal);
+document.getElementById('dayModal').addEventListener('click', e => { if (e.target===document.getElementById('dayModal')) closeModal(); });
 
-// ── RENDER CALENDAR ────────────────────────────────────────
-function renderCal(){
-  const y=VY,mo=VM,total=dim(y,mo);
-  document.getElementById('calMo').textContent=MONTHS[mo]+' '+y;
-  const grid=document.getElementById('calGrid');
-  grid.innerHTML='';
-  DOWS.forEach(d=>{const h=document.createElement('div');h.className='cdow';h.textContent=d;grid.appendChild(h);});
-
-  let first=new Date(y,mo,1).getDay();
-  first=(first+6)%7;
-  for(let i=0;i<first;i++){const e=document.createElement('div');e.className='cday empty';grid.appendChild(e);}
-
-  const sc={day:'sd',night:'sn',sleep:'ss',off:'so',extra:'se'};
-  for(let d=1;d<=total;d++){
-    const key=fd(new Date(y,mo,d));
-    const data=S.days[key];
-    const isToday=(key===TODAY);
-    const cell=document.createElement('div');
-    cell.className='cday'+(isToday?' today':'')+(data?' '+sc[data.type]:'');
-
-    // day number
-    const dn=document.createElement('div'); dn.className='dn'; dn.textContent=d;
-    cell.appendChild(dn);
-
-    if(data){
-      // label + optional star
-      const dl=document.createElement('div'); dl.className='dl';
-      const txt=document.createTextNode(SL[data.type]||'');
-      dl.appendChild(txt);
-      if(data.note&&data.note.trim()){
-        const star=document.createElement('span');
-        star.className='dstar'; star.textContent='★';
-        dl.appendChild(star);
-      }
-      cell.appendChild(dl);
-      if(data.hours>0){
-        const dh=document.createElement('div'); dh.className='dh'; dh.textContent=data.hours+'ч';
-        cell.appendChild(dh);
-      }
-    }
-
-    cell.addEventListener('click',()=>openMo(key,d));
-    grid.appendChild(cell);
-  }
-  updateSum();
-}
-
-// ── SUMMARY ────────────────────────────────────────────────
-function updateSum(){
-  const y=VY,mo=VM,total=dim(y,mo);
-  let days=0,nights=0,hrs=0;
-  for(let d=1;d<=total;d++){
-    const data=S.days[fd(new Date(y,mo,d))];
-    if(!data)continue;
-    hrs+=data.hours||0;
-    if(data.type==='day'||data.type==='extra')days++;
-    if(data.type==='night')nights++;
-  }
-  document.getElementById('sDay').textContent=days;
-  document.getElementById('sDayH').textContent=days>0?(days*11)+' ч':'0 ч';
-  document.getElementById('sNight').textContent=nights;
-  document.getElementById('sNightH').textContent=nights>0?(nights*11)+' ч':'0 ч';
-  document.getElementById('sHours').textContent=hrs;
-  if(hrs>0){
-    document.getElementById('hoursInp').value=hrs;
-    document.getElementById('hNote').textContent='← из графика';
-    S.hoursInp=String(hrs);
-  }
-  calcSal();
-}
-
-// ── MODAL ──────────────────────────────────────────────────
-let mKey=null,mType=null,mED=12;
-
-function openMo(key,dayNum){
-  mKey=key;
-  const data=S.days[key]||{type:'off',hours:0,ed:12,note:''};
-  mType=data.type; mED=data.ed||12;
-
-  const dt=new Date(key+'T12:00:00');
-  document.getElementById('moTitle').textContent=DOWS[(dt.getDay()+6)%7]+', '+dayNum+' '+MONTHS[VM];
-
-  document.querySelectorAll('.spbtn').forEach(b=>b.classList.remove('ap'));
-  const cls={day:'sp-d',night:'sp-n',sleep:'sp-s',off:'sp-o',extra:'sp-e'};
-  const el=document.querySelector('.'+cls[data.type]);
-  if(el)el.classList.add('ap');
-
-  document.getElementById('edur').classList.toggle('on',data.type==='extra');
-  document.getElementById('ed12').classList.toggle('on',mED===12);
-  document.getElementById('ed9').classList.toggle('on',mED===9);
-  document.getElementById('mHrs').value=data.hours||0;
-  document.getElementById('mNote').value=data.note||'';
-  setMHNote(data.type);
-  document.getElementById('mo').classList.add('on');
-}
-
-function setMHNote(t){
-  const n={day:'стд: 11ч',night:'стд: 11ч',sleep:'обычно 0',off:'обычно 0',extra:mED===12?'стд: 11ч':'стд: 8ч'};
-  document.getElementById('mHNote').textContent=n[t]||'';
-}
-function pickT(t){
-  mType=t;
-  document.querySelectorAll('.spbtn').forEach(b=>b.classList.remove('ap'));
-  const cls={day:'sp-d',night:'sp-n',sleep:'sp-s',off:'sp-o',extra:'sp-e'};
-  document.querySelector('.'+cls[t]).classList.add('ap');
-  const def={day:11,night:11,sleep:0,off:0,extra:mED===12?11:8};
-  document.getElementById('mHrs').value=def[t];
-  document.getElementById('edur').classList.toggle('on',t==='extra');
-  setMHNote(t);
-}
-function pickED(dur){
-  mED=dur;
-  document.getElementById('ed12').classList.toggle('on',dur===12);
-  document.getElementById('ed9').classList.toggle('on',dur===9);
-  document.getElementById('mHrs').value=dur===12?11:8;
-  setMHNote('extra');
-}
-function saveDay(){
-  if(!mKey||!mType)return;
-  S.days[mKey]={
-    type:mType,
-    hours:parseFloat(document.getElementById('mHrs').value)||0,
-    ed:mED,
-    note:document.getElementById('mNote').value.trim(),
-    _auto:false
+// ─── PWA ─────────────────────────────────────────────────────────────────────
+function injectManifest() {
+  const manifest = {
+    name: 'График смен',
+    short_name: 'График смен',
+    description: 'График смен и расчёт зарплаты',
+    start_url: './',
+    display: 'standalone',
+    orientation: 'portrait',
+    background_color: '#1e293b',
+    theme_color: '#1e293b',
+    icons: [{
+      src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%231e293b'/%3E%3Ctext x='96' y='130' text-anchor='middle' font-size='110' font-family='Apple Color Emoji,Segoe UI Emoji,sans-serif'%3E%F0%9F%93%85%3C/text%3E%3C/svg%3E",
+      sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable'
+    }]
   };
-  save(); moCloseBtn(); renderCal(); updateSum(); calcSal();
-}
-function moClose(e){if(e.target===document.getElementById('mo'))moCloseBtn();}
-function moCloseBtn(){document.getElementById('mo').classList.remove('on');}
-
-// ── SALARY ─────────────────────────────────────────────────
-function calcSal(){
-  const rid=S.role;
-  const el=document.getElementById('salRes');
-  if(!rid){el.classList.remove('on');return;}
-  const r=ROLES[rid];
-  const hours=parseFloat(document.getElementById('hoursInp').value)||0;
-  const ktuRaw=document.getElementById('ktuInp').value;
-  const ktu=ktuRaw?parseFloat(ktuRaw):1;
-  if(!hours){el.classList.remove('on');return;}
-  const sal=r.oklad*ktu/165*hours;
-  document.getElementById('salAmt').textContent=fmt(sal);
-  el.classList.add('on');
-  document.getElementById('salFml').innerHTML=
-    '<b>'+fmt(r.oklad)+'₽</b> × <b>'+ktu.toFixed(2)+'</b> ÷ <b>165</b> × <b>'+hours+'ч</b><br>'
-    +'= <span class="hi">'+fmt(sal)+' ₽</span>'
-    +(ktuRaw?'':'<br><span style="color:var(--extra);font-size:.64rem;">⚡ Введите КТУ для точного расчёта</span>');
-  S.hoursInp=document.getElementById('hoursInp').value;
-  S.ktuInp=document.getElementById('ktuInp').value;
-  save();
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  document.getElementById('manifest-link').href = URL.createObjectURL(blob);
 }
 
-// ── INIT ───────────────────────────────────────────────────
-load();
-document.getElementById('anchorDate').value=S.anchorDate||TODAY;
-if(S.role){
-  document.getElementById('roleSelect').value=S.role;
-  onRole();
+function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+  const swSrc = `
+const CACHE='zp-calc-v3';
+self.addEventListener('install',e=>{self.skipWaiting();});
+self.addEventListener('activate',e=>{
+  e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+  clients.claim();
+});
+self.addEventListener('fetch',e=>{
+  if(e.request.method!=='GET')return;
+  e.respondWith(
+    caches.open(CACHE).then(cache=>
+      cache.match(e.request).then(cached=>{
+        const net=fetch(e.request).then(res=>{if(res.ok)cache.put(e.request,res.clone());return res;}).catch(()=>cached);
+        return cached||net;
+      })
+    )
+  );
+});`;
+  try {
+    const blob = new Blob([swSrc], { type: 'application/javascript' });
+    const url = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(url, { scope: './' }).catch(() => {});
+  } catch(e) {}
 }
-setMode(S.mode||'auto');
-if(S.hoursInp)document.getElementById('hoursInp').value=S.hoursInp;
-if(S.ktuInp)  document.getElementById('ktuInp').value=S.ktuInp;
-calcSal();
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+function init() {
+  // Populate position selector
+  const sel = document.getElementById('positionSelect');
+  Object.keys(POSITIONS).forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name; opt.textContent = name;
+    sel.appendChild(opt);
+  });
+
+  loadState();
+  if (state.position) sel.value = state.position;
+
+  injectManifest();
+  registerSW();
+  renderAll();
+}
+
+init();
 </script>
-</body>
-</html>
+<script src="./График смен_files/replit-pill.global.js.Без названия" data-repl-id="a8465c40-8300-4f4b-a021-7b7e595cac16"></script>
+
+<div id="replit-pill-host"><template shadowrootmode="closed"><style>
+        #replit-pill {
+          position: fixed;
+          bottom: 48px;
+          right: 48px;
+          border-radius: 120px;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+          font-size: 12px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          z-index: 1000000;
+          white-space: nowrap;
+          cursor: pointer;
+          overflow: hidden;
+          background-color: rgba(0, 0, 0, 0.4);
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
+          color: #f0f2f6;
+          box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.05), 1px 1px 1px 0px rgba(255, 255, 255, 0.1);
+          transition: transform 0.2s ease;
+        }
+        #replit-pill:hover {
+          transform: scale(1.05);
+        }
+        #replit-pill .shimmer {
+          position: absolute;
+          inset: 0;
+          transform: translateX(-100%);
+          transition: transform 0.7s ease-in-out;
+          background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+          pointer-events: none;
+        }
+        #replit-pill:hover .shimmer {
+          transform: translateX(100%);
+        }
+        #replit-pill .badge-content {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          position: relative;
+          flex: 0 0 auto;
+        }
+        #replit-pill .replit-logo {
+          color: #f0f2f6;
+        }
+        #replit-pill .replit-text {
+          font-weight: 500;
+          line-height: 20px;
+          color: #f0f2f6;
+        }
+        #replit-pill .close-button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 2px;
+          flex: 0 0 auto;
+          border-radius: 64px;
+          width: 12px;
+          height: 12px;
+          min-width: 0;
+          cursor: pointer;
+          border: none;
+          box-sizing: border-box;
+          background-color: transparent;
+          transition: background-color 0.2s ease;
+        }
+        #replit-pill .close-button:hover {
+          background-color: rgba(255, 255, 255, 0.1);
+        }
+        #replit-pill .close-button:focus-visible {
+          outline: 1px solid #e6e9ef;
+          outline-offset: 1px;
+        }
+        #replit-pill .close-icon {
+          width: 8px;
+          height: 8px;
+          color: #e6e9ef;
+        }
+      </style><div id="replit-pill"><div class="shimmer"></div><div class="badge-content"><svg width="10.67" height="16" viewBox="0 0 50 75" fill="none" class="replit-logo">
+        <path d="M25 19.995C25 20.0375 25 20.0575 25 20.085C25.015 21.34 25.5475 22.6275 26.425 23.525C26.445 23.545 26.4475 23.5475 26.45 23.55C26.485 23.585 26.5025 23.6025 26.54 23.6375C27.4225 24.485 28.6775 25.005 29.9025 25.03C29.9525 25.03 29.9975 25.03 30.0825 25.03H42C44.8 25.03 46.2 25.03 47.27 25.575C48.21 26.055 48.975 26.82 49.455 27.76C50 28.83 50 30.23 50 33.03V42.03C50 44.83 50 46.23 49.455 47.3C48.975 48.24 48.21 49.005 47.27 49.485C46.2 50.03 44.8 50.03 42 50.03H29.9275C28.6425 50.0325 27.3225 50.58 26.4125 51.485C26.4075 51.49 26.4775 51.42 26.45 51.4475C26.445 51.4525 26.4425 51.4525 26.4225 51.475C25.545 52.3725 25.0125 53.6575 24.9975 54.9125C24.9975 54.94 24.9975 54.9625 24.9975 55.0025V67.0575C24.9975 69.8575 24.9975 71.2575 24.4525 72.3275C23.9725 73.2675 23.2075 74.0325 22.2675 74.5125C21.1975 75.0575 19.7975 75.0575 16.9975 75.0575H7.9975C5.1975 75.0575 3.7975 75.0575 2.7275 74.5125C1.7875 74.0325 1.0225 73.2675 0.542498 72.3275C-0.00250244 71.2575 -0.00250244 69.8575 -0.00250244 67.0575V58.0575C-0.00250244 55.2575 -0.00250244 53.8575 0.542498 52.7875C1.0225 51.8475 1.7875 51.0825 2.7275 50.6025C3.7975 50.0575 5.1975 50.0575 7.9975 50.0575H19.7225C19.9 50.0575 19.9875 50.0575 20.08 50.055C21.2475 50.0125 22.4375 49.52 23.295 48.7225C23.3625 48.66 23.4125 48.61 23.5125 48.51C23.55 48.4725 23.5675 48.455 23.6025 48.42C24.455 47.5325 24.9725 46.2825 24.9975 45.0525C24.9975 45.0025 24.9975 44.96 24.9975 44.875V30.12C24.9975 30.0325 24.9975 29.99 24.9975 29.94C24.9725 28.71 24.455 27.46 23.6025 26.575C23.5675 26.54 23.55 26.52 23.5125 26.4825C23.475 26.445 23.4575 26.4275 23.42 26.3925C22.5325 25.54 21.2825 25.0225 20.0525 24.9975C20.0025 24.9975 19.96 24.9975 19.875 24.9975H7.9975C5.1975 24.9975 3.7975 24.9975 2.7275 24.4525C1.7875 23.9725 1.0225 23.2075 0.542498 22.2675C-0.00250244 21.1975 -0.00250244 19.7975 -0.00250244 16.9975V7.9975C-2.44146e-06 5.2 -2.44379e-06 3.8 0.544998 2.73C1.025 1.79 1.79 1.025 2.73 0.545C3.8 0 5.2 0 8 0H17C19.8 0 21.2 0 22.27 0.545C23.21 1.025 23.975 1.79 24.455 2.73C25 3.8 25 5.2 25 8V19.995Z" fill="currentColor"></path>
+      </svg><div class="replit-text">Made with Replit</div></div><button class="close-button" aria-label="Close"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="close-icon">
+        <path d="M18 6 6 18"></path>
+        <path d="m6 6 12 12"></path>
+      </svg></button></div></template></div></body><app-ls-content ng-version="17.3.7"><template shadowrootmode="open"><!----><app-similar-tools _nghost-ng-c2697620354=""><!----><!----><!----></app-similar-tools><!----><!----><style>[_nghost-ng-c2697620354]{font-family:Open Sans,sans-serif;color:#121212}</style></template></app-ls-content></html>
