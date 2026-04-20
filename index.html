@@ -1,1491 +1,776 @@
 <!DOCTYPE html>
-<!-- saved from url=(0099)https://a8465c40-8300-4f4b-a021-7b7e595cac16-00-hysxb2wyuza3.kirk.replit.dev/salary-calculator.html -->
-<html lang="ru"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="График смен">
   <meta name="theme-color" content="#1e293b">
+  <meta name="description" content="Учёт рабочих смен и расчёт зарплаты">
+  
   <title>График смен</title>
-  <link id="manifest-link" rel="manifest" href="blob:https://a8465c40-8300-4f4b-a021-7b7e595cac16-00-hysxb2wyuza3.kirk.replit.dev/4888cf43-2cf9-4dcc-9bc8-2023e5d25879">
-  <style>
-    :root {
-      --shift-day-bg: #FDE68A;
-      --shift-day-text: #78350f;
-      --shift-day-border: #d97706;
-      --shift-night-bg: #93C5FD;
-      --shift-night-text: #1e3a8a;
-      --shift-night-border: #1d4ed8;
-      --shift-sleep-bg: #C4B5FD;
-      --shift-sleep-text: #3b0764;
-      --shift-sleep-border: #6d28d9;
-      --shift-off-bg: #86EFAC;
-      --shift-off-text: #14532d;
-      --shift-off-border: #15803d;
-      --shift-extra-bg: #F9A8D4;
-      --shift-extra-text: #500724;
-      --shift-extra-border: #be185d;
-      --shift-none-bg: #e2e8f0;
-      --shift-none-text: #64748b;
-      --shift-none-border: #94a3b8;
-      --bg: #f0f4f8;
-      --surface: #ffffff;
-      --surface2: #f8fafc;
-      --border: #e2e8f0;
-      --text: #1e293b;
-      --text-muted: #64748b;
-      --primary: #1e293b;
-      --primary-light: #334155;
-      --radius: 14px;
-      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    html { height: 100%; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      max-width: 500px;
-      margin: 0 auto;
-      padding-bottom: env(safe-area-inset-bottom, 16px);
-    }
-    .app-header {
-      background: var(--primary);
-      color: white;
-      padding: 16px 16px 14px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-    .app-header-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-    .app-title { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
-    .position-select {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.1);
-      color: white;
-      font-size: 15px;
-      outline: none;
-      cursor: pointer;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='white' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      padding-right: 36px;
-    }
-    .position-select option { background: #1e293b; color: white; }
-    .main { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
-    .card {
-      background: var(--surface);
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 13px 16px;
-      border-bottom: 1px solid var(--border);
-    }
-    .card-header h2 { font-size: 14px; font-weight: 600; color: var(--text); }
-    .card-badge {
-      font-size: 11px;
-      color: var(--text-muted);
-      background: var(--surface2);
-      padding: 3px 8px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-    }
-    .month-nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-    }
-    .month-nav-btn {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      width: 36px; height: 36px;
-      cursor: pointer;
-      font-size: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text);
-      transition: background 0.15s;
-    }
-    .month-nav-btn:active { background: var(--border); }
-    .month-name { font-size: 16px; font-weight: 700; color: var(--text); }
-    .mode-toggle {
-      display: flex;
-      background: var(--surface2);
-      border-radius: 10px;
-      padding: 3px;
-      margin: 0 16px 12px;
-      border: 1px solid var(--border);
-    }
-    .mode-btn {
-      flex: 1; padding: 8px 6px;
-      border: none; border-radius: 8px;
-      background: none; cursor: pointer;
-      font-size: 13px; font-weight: 500;
-      color: var(--text-muted);
-      transition: all 0.2s;
-    }
-    .mode-btn.active {
-      background: var(--surface);
-      color: var(--text);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-      font-weight: 600;
-    }
-    .calendar-wrap { padding: 0 8px 8px; }
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 3px;
-    }
-    .day-header {
-      text-align: center;
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--text-muted);
-      padding: 4px 0 6px;
-      letter-spacing: 0.3px;
-    }
-    .day-cell {
-      position: relative;
-      aspect-ratio: 1;
-      border-radius: 9px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2px 1px;
-      border: 2px solid transparent;
-      transition: transform 0.1s, box-shadow 0.15s;
-      user-select: none;
-    }
-    .day-cell:active { transform: scale(0.92); }
-    .day-cell.empty { background: transparent; cursor: default; pointer-events: none; }
-    .day-cell.today {
-      transform: scale(1.13);
-      box-shadow: 0 5px 18px rgba(0,0,0,0.25);
-      z-index: 2;
-      border-width: 2.5px;
-    }
-    .day-cell.today::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 7px;
-      background: rgba(0,0,0,0.18);
-      pointer-events: none;
-    }
-    .day-cell.today .day-num,
-    .day-cell.today .day-label,
-    .day-cell.today .day-note-mark { position: relative; z-index: 1; }
-    .day-cell.today.shift-day    { border-color: #92400e; }
-    .day-cell.today.shift-night  { border-color: #1e3a8a; }
-    .day-cell.today.shift-sleep  { border-color: #4c1d95; }
-    .day-cell.today.shift-off    { border-color: #14532d; }
-    .day-cell.today.shift-extra  { border-color: #831843; }
-    .day-cell.today.shift-none   { border-color: #475569; }
-    .day-cell.other-month { opacity: 0.35; }
-    .day-cell.shift-day    { background: var(--shift-day-bg);   color: var(--shift-day-text); }
-    .day-cell.shift-night  { background: var(--shift-night-bg); color: var(--shift-night-text); }
-    .day-cell.shift-sleep  { background: var(--shift-sleep-bg); color: var(--shift-sleep-text); }
-    .day-cell.shift-off    { background: var(--shift-off-bg);   color: var(--shift-off-text); }
-    .day-cell.shift-extra  { background: var(--shift-extra-bg); color: var(--shift-extra-text); }
-    .day-cell.shift-none   { background: var(--shift-none-bg);  color: var(--shift-none-text); }
-    .day-num { font-size: 13px; font-weight: 700; line-height: 1; }
-    .day-label {
-      font-size: 7.5px; font-weight: 700;
-      text-align: center; line-height: 1.1;
-      margin-top: 2px; max-width: 100%;
-      overflow: hidden; text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .day-note-mark {
-      position: absolute; top: 2px; right: 3px;
-      font-size: 8px; opacity: 0.7; line-height: 1;
-    }
-    .day-modified-mark {
-      position: absolute; top: 2px; left: 3px;
-      font-size: 7px; opacity: 0.5; line-height: 1;
-    }
-    .legend {
-      display: flex; flex-wrap: wrap; gap: 6px 10px;
-      padding: 8px 16px 12px;
-    }
-    .legend-item {
-      display: flex; align-items: center; gap: 4px;
-      font-size: 11px; color: var(--text-muted);
-    }
-    .legend-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .settings-toggle-row {
-      padding: 0 16px 12px;
-      display: flex;
-      align-items: center;
-    }
-    .toggle-btn {
-      display: flex; align-items: center; gap: 6px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      cursor: pointer;
-      font-size: 13px;
-      color: var(--text-muted);
-      font-weight: 500;
-      padding: 8px 12px;
-      transition: background 0.15s;
-    }
-    .toggle-btn:active { background: var(--border); }
-    .chevron { transition: transform 0.25s; font-style: normal; }
-    .chevron.open { transform: rotate(180deg); }
-    .collapsible {
-      overflow: hidden;
-      max-height: 0;
-      transition: max-height 0.3s ease;
-    }
-    .collapsible.open { max-height: 600px; }
-    .settings-panel {
-      padding: 16px;
-      border-top: 1px solid var(--border);
-      background: var(--surface2);
-      display: flex; flex-direction: column; gap: 12px;
-    }
-    .field-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
-    .input-field {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      font-size: 15px;
-      background: var(--surface);
-      color: var(--text);
-      outline: none;
-      transition: border-color 0.2s;
-      font-family: inherit;
-    }
-    .input-field:focus { border-color: var(--primary); }
-    .input-field[type="number"]::-webkit-inner-spin-button { opacity: 0.5; }
-    select.input-field {
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      padding-right: 36px;
-      cursor: pointer;
-    }
-    .btn-primary {
-      width: 100%; padding: 13px;
-      background: var(--primary); color: white;
-      border: none; border-radius: 10px;
-      font-size: 15px; font-weight: 600;
-      cursor: pointer; font-family: inherit;
-      transition: background 0.15s;
-    }
-    .btn-primary:active { background: var(--primary-light); }
-    .btn-secondary {
-      width: 100%; padding: 11px;
-      background: var(--surface2); color: var(--text);
-      border: 1px solid var(--border); border-radius: 10px;
-      font-size: 14px; font-weight: 500;
-      cursor: pointer; font-family: inherit;
-      transition: background 0.15s;
-    }
-    .btn-secondary:active { background: var(--border); }
-    .btn-danger {
-      padding: 9px 14px;
-      background: #fee2e2; color: #b91c1c;
-      border: 1px solid #fecaca; border-radius: 9px;
-      font-size: 13px; font-weight: 500;
-      cursor: pointer; font-family: inherit;
-    }
-    .summary-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 0;
-    }
-    .summary-item {
-      text-align: center; padding: 14px 8px;
-      border-right: 1px solid var(--border);
-    }
-    .summary-item:last-child { border-right: none; }
-    .summary-value { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; }
-    .summary-label { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
-    .calc-section { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-    .calc-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .calc-row:last-child { border-bottom: none; }
-    .calc-row-label { font-size: 14px; color: var(--text-muted); }
-    .calc-row-value { font-size: 18px; font-weight: 700; color: var(--text); }
-    .salary-card {
-      background: var(--primary);
-      color: white;
-      margin: 0 16px 16px;
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-    }
-    .salary-label-text { font-size: 12px; opacity: 0.65; letter-spacing: 0.3px; }
-    .salary-amount { font-size: 34px; font-weight: 800; margin: 4px 0; letter-spacing: -1px; }
-    .salary-formula { font-size: 12px; opacity: 0.6; margin-top: 8px; }
-    .modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.45);
-      z-index: 1000;
-      display: flex; align-items: flex-end; justify-content: center;
-      backdrop-filter: blur(2px);
-      -webkit-backdrop-filter: blur(2px);
-    }
-    .modal-overlay.hidden { display: none; }
-    .modal {
-      background: var(--surface);
-      border-radius: 20px 20px 0 0;
-      width: 100%; max-width: 500px;
-      max-height: 92vh;
-      overflow-y: auto;
-      padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-    }
-    .modal-handle {
-      width: 40px; height: 4px;
-      background: var(--border); border-radius: 2px;
-      margin: 12px auto 0;
-    }
-    .modal-title {
-      padding: 16px 20px 4px;
-      font-size: 18px; font-weight: 700;
-    }
-    .modal-date-info {
-      padding: 0 20px 14px;
-      font-size: 13px; color: var(--text-muted);
-      border-bottom: 1px solid var(--border);
-    }
-    .modal-section { padding: 14px 20px 0; }
-    .modal-section-title {
-      font-size: 11px; font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 0.6px;
-      margin-bottom: 10px;
-    }
-    .shift-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
-    }
-    .shift-btn {
-      padding: 12px 10px;
-      border-radius: 11px;
-      border: 2px solid transparent;
-      cursor: pointer;
-      font-size: 13px; font-weight: 600;
-      text-align: left;
-      transition: all 0.15s;
-      font-family: inherit;
-    }
-    .shift-btn.shift-day    { background: var(--shift-day-bg);   color: var(--shift-day-text); }
-    .shift-btn.shift-night  { background: var(--shift-night-bg); color: var(--shift-night-text); }
-    .shift-btn.shift-sleep  { background: var(--shift-sleep-bg); color: var(--shift-sleep-text); }
-    .shift-btn.shift-off    { background: var(--shift-off-bg);   color: var(--shift-off-text); }
-    .shift-btn.shift-extra  { background: var(--shift-extra-bg); color: var(--shift-extra-text); }
-    .shift-btn.shift-none   { background: var(--shift-none-bg);  color: var(--shift-none-text); }
-    .shift-btn.active.shift-day    { border-color: var(--shift-day-border); }
-    .shift-btn.active.shift-night  { border-color: var(--shift-night-border); }
-    .shift-btn.active.shift-sleep  { border-color: var(--shift-sleep-border); }
-    .shift-btn.active.shift-off    { border-color: var(--shift-off-border); }
-    .shift-btn.active.shift-extra  { border-color: var(--shift-extra-border); }
-    .shift-btn.active.shift-none   { border-color: var(--shift-none-border); }
-    .shift-btn-icon { font-size: 16px; display: block; margin-bottom: 3px; }
-    .shift-btn-label { display: block; }
-    .shift-btn-hours { display: block; font-size: 10px; font-weight: 500; opacity: 0.7; margin-top: 1px; }
-    .extra-dur-row { display: flex; gap: 8px; margin-top: 10px; }
-    .extra-dur-btn {
-      flex: 1; padding: 9px;
-      border: 1.5px solid var(--border);
-      border-radius: 9px;
-      background: var(--surface2);
-      font-size: 13px; font-weight: 500;
-      cursor: pointer; text-align: center; font-family: inherit;
-    }
-    .extra-dur-btn.active { background: var(--shift-extra-bg); border-color: var(--shift-extra-border); color: var(--shift-extra-text); font-weight: 700; }
-    .hours-adjuster { display: flex; align-items: center; gap: 10px; }
-    .adj-btn {
-      width: 40px; height: 40px;
-      border-radius: 10px; border: 1.5px solid var(--border);
-      background: var(--surface2); font-size: 22px;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      color: var(--text); font-weight: 300; flex-shrink: 0;
-      font-family: inherit;
-    }
-    .adj-btn:active { background: var(--border); }
-    .adj-input {
-      flex: 1; text-align: center;
-      padding: 9px; border: 1.5px solid var(--border);
-      border-radius: 10px; font-size: 18px; font-weight: 700;
-      color: var(--text); font-family: inherit; outline: none;
-    }
-    .adj-input:focus { border-color: var(--primary); }
-    textarea.input-field { resize: none; height: 80px; }
-    .modal-actions { padding: 14px 20px 0; display: flex; flex-direction: column; gap: 8px; }
-    .info-box {
-      background: #f0f9ff; border: 1px solid #bae6fd;
-      border-radius: 10px; padding: 11px 14px;
-      font-size: 12px; color: #0c4a6e; line-height: 1.5;
-    }
-    .divider { height: 1px; background: var(--border); margin: 2px 0; }
-    .empty-state {
-      text-align: center; padding: 28px 20px;
-      color: var(--text-muted); font-size: 14px;
-    }
-    .empty-state-icon { font-size: 36px; margin-bottom: 10px; opacity: 0.4; }
-    .pill-row { display: flex; flex-wrap: wrap; gap: 6px; }
-    .pill {
-      padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border);
-      font-size: 12px; background: var(--surface2); color: var(--text-muted);
-    }
-    .pill.active-day { background: var(--shift-day-bg); color: var(--shift-day-text); border-color: var(--shift-day-border); }
-    .pill.active-night { background: var(--shift-night-bg); color: var(--shift-night-text); border-color: var(--shift-night-border); }
-    .week-info { font-size: 11px; color: var(--text-muted); font-style: italic; }
-    .bottom-space { height: 20px; }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #0f172a; --surface: #1e293b; --surface2: #162032;
-        --border: #2d3f55; --text: #f1f5f9; --text-muted: #94a3b8;
-        --primary: #334155; --primary-light: #475569;
-        --shift-day-bg: #451a00; --shift-day-text: #fdba74;
-        --shift-night-bg: #0f1e40; --shift-night-text: #93c5fd;
-        --shift-sleep-bg: #1a0f40; --shift-sleep-text: #c4b5fd;
-        --shift-off-bg: #052e16; --shift-off-text: #86efac;
-        --shift-extra-bg: #2e0a24; --shift-extra-text: #f0abfc;
-        --shift-none-bg: #162032; --shift-none-text: #475569;
-      }
-    }
-  </style>
-<style>[_nghost-ng-c2697620354]{font-family:Open Sans,sans-serif;color:#121212}</style></head>
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Preconnect для производительности -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%231e293b'/%3E%3Ctext x='96' y='130' text-anchor='middle' font-size='110' font-family='Apple Color Emoji,Segoe UI Emoji,sans-serif'%3E📅%3C/text%3E%3C/svg%3E">
+</head>
 <body>
+  <!-- Skip link для доступности -->
+  <a href="#main-content" class="skip-link">Перейти к основному содержимому</a>
 
-<div class="app-header">
-  <div class="app-header-top">
-    <span class="app-title">📅 График смен</span>
-  </div>
-  <select class="position-select" id="positionSelect">
-    <option value="">— Выберите должность —</option>
-  <option value="РТС">РТС</option><option value="Прессовщик">Прессовщик</option><option value="Водитель склад">Водитель склад</option><option value="Водитель смена">Водитель смена</option><option value="Разнорабочий">Разнорабочий</option><option value="Упаковщик">Упаковщик</option><option value="Диспетчер">Диспетчер</option><option value="Начальник смены">Начальник смены</option><option value="Мельник">Мельник</option><option value="Автоклавщик">Автоклавщик</option></select>
-</div>
-
-<div class="main">
-
-  <!-- CALENDAR CARD -->
-  <div class="card" id="calendarCard">
-    <div class="month-nav">
-      <button class="month-nav-btn" id="prevMonth">‹</button>
-      <div class="month-name" id="monthName">Апрель 2026</div>
-      <button class="month-nav-btn" id="nextMonth">›</button>
+  <header class="app-header" role="banner">
+    <div class="app-header-top">
+      <h1 class="app-title">📅 График смен</h1>
     </div>
+    <label for="positionSelect" class="sr-only">Выберите должность</label>
+    <select class="position-select" id="positionSelect" aria-label="Выбор должности">
+      <option value="">— Выберите должность —</option>
+      <option value="РТС">РТС</option>
+      <option value="Прессовщик">Прессовщик</option>
+      <option value="Водитель склад">Водитель склад</option>
+      <option value="Водитель смена">Водитель смена</option>
+      <option value="Разнорабочий">Разнорабочий</option>
+      <option value="Упаковщик">Упаковщик</option>
+      <option value="Диспетчер">Диспетчер</option>
+      <option value="Начальник смены">Начальник смены</option>
+      <option value="Мельник">Мельник</option>
+      <option value="Автоклавщик">Автоклавщик</option>
+    </select>
+  </header>
 
-    <div class="mode-toggle">
-      <button class="mode-btn active" id="modeSchedule" data-mode="schedule">📅 По графику</button>
-      <button class="mode-btn" id="modeManual" data-mode="manual">✏️ Вручную</button>
-    </div>
+  <main class="main" id="main-content" role="main">
 
-    <div class="calendar-wrap">
-      <div class="calendar-grid" id="calendarGrid"><div class="day-header">Пн</div><div class="day-header">Вт</div><div class="day-header">Ср</div><div class="day-header">Чт</div><div class="day-header">Пт</div><div class="day-header">Сб</div><div class="day-header">Вс</div><div class="day-cell empty"></div><div class="day-cell empty"></div><div class="day-cell shift-none" onclick="openModal(1)">
-      
-      <div class="day-num">1</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(2)">
-      
-      <div class="day-num">2</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(3)">
-      
-      <div class="day-num">3</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(4)">
-      
-      <div class="day-num">4</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(5)">
-      
-      <div class="day-num">5</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(6)">
-      
-      <div class="day-num">6</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(7)">
-      
-      <div class="day-num">7</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(8)">
-      
-      <div class="day-num">8</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none today" onclick="openModal(9)">
-      
-      <div class="day-num">9</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(10)">
-      
-      <div class="day-num">10</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(11)">
-      
-      <div class="day-num">11</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(12)">
-      
-      <div class="day-num">12</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(13)">
-      
-      <div class="day-num">13</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(14)">
-      
-      <div class="day-num">14</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(15)">
-      
-      <div class="day-num">15</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(16)">
-      
-      <div class="day-num">16</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(17)">
-      
-      <div class="day-num">17</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(18)">
-      
-      <div class="day-num">18</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(19)">
-      
-      <div class="day-num">19</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(20)">
-      
-      <div class="day-num">20</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(21)">
-      
-      <div class="day-num">21</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(22)">
-      
-      <div class="day-num">22</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(23)">
-      
-      <div class="day-num">23</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(24)">
-      
-      <div class="day-num">24</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(25)">
-      
-      <div class="day-num">25</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(26)">
-      
-      <div class="day-num">26</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(27)">
-      
-      <div class="day-num">27</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(28)">
-      
-      <div class="day-num">28</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(29)">
-      
-      <div class="day-num">29</div>
-      <div class="day-label"></div>
-    </div><div class="day-cell shift-none" onclick="openModal(30)">
-      
-      <div class="day-num">30</div>
-      <div class="day-label"></div>
-    </div></div>
-    </div>
-
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#FDE68A;border:1.5px solid #d97706"></div>День</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#93C5FD;border:1.5px solid #1d4ed8"></div>Ночь</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#C4B5FD;border:1.5px solid #6d28d9"></div>Отсыпной</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#86EFAC;border:1.5px solid #15803d"></div>Выходной</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#F9A8D4;border:1.5px solid #be185d"></div>Доп. смена</div>
-    </div>
-
-    <div class="settings-toggle-row">
-      <button class="toggle-btn" id="settingsToggle">
-        <span>⚙️</span>
-        <span>Настройка графика</span>
-        <i class="chevron" id="settingsChevron">▾</i>
-      </button>
-    </div>
-
-    <div class="collapsible" id="settingsPanel">
-      <div class="settings-panel">
-        <div id="autoSettingsBlock">
-          <div class="field-label">Дата начала цикла</div>
-          <input type="date" class="input-field" id="cycleStartDate" style="margin-bottom:10px">
-          <div class="field-label">Тип смены в эту дату</div>
-          <select class="input-field" id="cycleStartType" style="margin-bottom:12px"><option value="">— нет (5×2 = авто) —</option></select>
-          <button class="btn-primary" id="applyAutoBtn">Применить к графику</button>
-          <div id="cycleInfo" style="margin-top:10px; display:none"></div>
-        </div>
-        <div class="divider"></div>
-        <button class="btn-danger" id="clearMonthBtn">Очистить ручные правки этого месяца</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- SUMMARY CARD -->
-  <div class="card">
-    <div class="card-header">
-      <h2>Итоги месяца</h2>
-      <span class="card-badge" id="summaryBadge">График</span>
-    </div>
-    <div class="summary-grid">
-      <div class="summary-item">
-        <div class="summary-value" id="sumWorkDays">0</div>
-        <div class="summary-label">Раб. дней</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-value" id="sumHours">0</div>
-        <div class="summary-label">Часов (зачёт)</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-value" id="sumNights">0</div>
-        <div class="summary-label">Ночных</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SALARY CARD -->
-  <div class="card">
-    <div class="card-header">
-      <h2>Расчёт зарплаты</h2>
-    </div>
-    <div class="calc-section">
-
-      <div id="manualHoursBlock" style="display:none">
-        <div class="field-label">Часов за месяц (без графика)</div>
-        <input type="number" class="input-field" id="manualHoursInput" placeholder="Введите часы" min="0" max="400" step="0.5">
+    <!-- CALENDAR CARD -->
+    <section class="card" id="calendarCard" aria-labelledby="calendarTitle">
+      <div class="month-nav">
+        <button class="month-nav-btn" id="prevMonth" aria-label="Предыдущий месяц">‹</button>
+        <h2 class="month-name" id="monthName" aria-live="polite">Апрель 2026</h2>
+        <button class="month-nav-btn" id="nextMonth" aria-label="Следующий месяц">›</button>
       </div>
 
-      <div class="calc-row" id="hoursCalcRow">
-        <span class="calc-row-label">Часов (зачёт)</span>
-        <span class="calc-row-value" id="calcHoursVal">0</span>
+      <div class="mode-toggle" role="tablist" aria-label="Режим отображения">
+        <button class="mode-btn active" id="modeSchedule" data-mode="schedule" role="tab" aria-selected="true">📅 По графику</button>
+        <button class="mode-btn" id="modeManual" data-mode="manual" role="tab" aria-selected="false">✏️ Вручную</button>
       </div>
 
-      <div class="calc-row">
-        <span class="calc-row-label">Оклад</span>
-        <span class="calc-row-value" id="calcSalaryBase">—</span>
-      </div>
-
-      <div class="calc-row">
-        <span class="calc-row-label">Норма часов</span>
-        <span class="calc-row-value">165 ч</span>
-      </div>
-
-      <div>
-        <div class="field-label">КТУ (коэффициент трудового участия)</div>
-        <input type="number" class="input-field" id="ktuInput" placeholder="Например: 2.55" min="0" max="10" step="0.01">
-      </div>
-
-    </div>
-
-    <div class="salary-card" id="salaryCard">
-      <div class="salary-label-text" id="salaryLabelText">ВЫБЕРИТЕ ДОЛЖНОСТЬ</div>
-      <div class="salary-amount" id="salaryAmount">—</div>
-      <div class="salary-formula" id="salaryFormula"></div>
-    </div>
-  </div>
-
-  <div class="bottom-space"></div>
-</div>
-
-<!-- DAY EDITOR MODAL -->
-<div class="modal-overlay hidden" id="dayModal">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="modalTitle">1 апреля</div>
-    <div class="modal-date-info" id="modalDateInfo">понедельник</div>
-
-    <div class="modal-section">
-      <div class="modal-section-title">Тип смены</div>
-      <div class="shift-grid" id="shiftGrid">
-        <button class="shift-btn shift-day" data-type="day">
-          <span class="shift-btn-icon">☀️</span>
-          <span class="shift-btn-label">День</span>
-          <span class="shift-btn-hours" id="shiftHintDay"></span>
-        </button>
-        <button class="shift-btn shift-night" data-type="night">
-          <span class="shift-btn-icon">🌙</span>
-          <span class="shift-btn-label">Ночь</span>
-          <span class="shift-btn-hours" id="shiftHintNight"></span>
-        </button>
-        <button class="shift-btn shift-sleep" data-type="sleep">
-          <span class="shift-btn-icon">😴</span>
-          <span class="shift-btn-label">Отсыпной</span>
-          <span class="shift-btn-hours">0 ч</span>
-        </button>
-        <button class="shift-btn shift-off" data-type="off">
-          <span class="shift-btn-icon">🟢</span>
-          <span class="shift-btn-label">Выходной</span>
-          <span class="shift-btn-hours">0 ч</span>
-        </button>
-        <button class="shift-btn shift-extra" data-type="extra">
-          <span class="shift-btn-icon">⚡</span>
-          <span class="shift-btn-label">Доп. смена</span>
-          <span class="shift-btn-hours">по выбору</span>
-        </button>
-        <button class="shift-btn shift-none" data-type="none">
-          <span class="shift-btn-icon">—</span>
-          <span class="shift-btn-label">Не задан</span>
-          <span class="shift-btn-hours">0 ч</span>
-        </button>
-      </div>
-
-      <div id="extraDurSection" style="display:none; margin-top:10px;">
-        <div class="field-label" style="margin-bottom:6px">Длительность доп. смены</div>
-        <div class="extra-dur-row">
-          <button class="extra-dur-btn active" data-edur="12">12 ч → 11 зачёт</button>
-          <button class="extra-dur-btn" data-edur="9">9 ч → 8 зачёт</button>
+      <div class="calendar-wrap">
+        <div class="calendar-grid" id="calendarGrid" role="grid" aria-label="Календарь смен">
+          <!-- Заголовки дней недели -->
+          <div class="day-header" role="columnheader">Пн</div>
+          <div class="day-header" role="columnheader">Вт</div>
+          <div class="day-header" role="columnheader">Ср</div>
+          <div class="day-header" role="columnheader">Чт</div>
+          <div class="day-header" role="columnheader">Пт</div>
+          <div class="day-header" role="columnheader">Сб</div>
+          <div class="day-header" role="columnheader">Вс</div>
+          <!-- Ячейки дней генерируются через JS -->
         </div>
       </div>
-    </div>
 
-    <div class="modal-section" id="hoursSection">
-      <div class="modal-section-title">Фактические часы (зачёт)</div>
-      <div class="hours-adjuster">
-        <button class="adj-btn" id="hoursDown">−</button>
-        <input class="adj-input" type="number" id="hoursInput" min="0" max="24" step="0.5">
-        <button class="adj-btn" id="hoursUp">+</button>
+      <div class="legend" aria-label="Легенда смен">
+        <div class="legend-item"><div class="legend-dot" style="background:#FDE68A;border:1.5px solid #d97706"></div>День</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#93C5FD;border:1.5px solid #1d4ed8"></div>Ночь</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#C4B5FD;border:1.5px solid #6d28d9"></div>Отсыпной</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#86EFAC;border:1.5px solid #15803d"></div>Выходной</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#F9A8D4;border:1.5px solid #be185d"></div>Доп. смена</div>
       </div>
-      <div style="font-size:11px; color:var(--text-muted); margin-top:6px">
-        Можно изменить, если работали не полную смену
+
+      <div class="settings-toggle-row">
+        <button class="toggle-btn" id="settingsToggle" aria-expanded="false" aria-controls="settingsPanel">
+          <span aria-hidden="true">⚙️</span>
+          <span>Настройка графика</span>
+          <i class="chevron" id="settingsChevron" aria-hidden="true">▾</i>
+        </button>
       </div>
-    </div>
 
-    <div class="modal-section">
-      <div class="modal-section-title">Заметка</div>
-      <textarea class="input-field" id="noteInput" placeholder="Заметка к этому дню (необязательно)..."></textarea>
-    </div>
+      <div class="collapsible" id="settingsPanel" role="region" aria-label="Настройки графика">
+        <div class="settings-panel">
+          <div id="autoSettingsBlock">
+            <label class="field-label" for="cycleStartDate">Дата начала цикла</label>
+            <input type="date" class="input-field" id="cycleStartDate" style="margin-bottom:10px">
+            
+            <label class="field-label" for="cycleStartType">Тип смены в эту дату</label>
+            <select class="input-field" id="cycleStartType" style="margin-bottom:12px">
+              <option value="">— нет (5×2 = авто) —</option>
+            </select>
+            
+            <button class="btn-primary" id="applyAutoBtn">Применить к графику</button>
+            <div id="cycleInfo" style="margin-top:10px; display:none" aria-live="polite"></div>
+          </div>
+          
+          <div class="divider"></div>
+          <button class="btn-danger" id="clearMonthBtn">Очистить ручные правки этого месяца</button>
+        </div>
+      </div>
+    </section>
 
-    <div class="modal-actions">
-      <button class="btn-primary" id="saveDayBtn">Сохранить</button>
-      <button class="btn-secondary" id="cancelDayBtn">Отмена</button>
+    <!-- SUMMARY CARD -->
+    <section class="card" aria-labelledby="summaryTitle">
+      <div class="card-header">
+        <h2 id="summaryTitle">Итоги месяца</h2>
+        <span class="card-badge" id="summaryBadge" aria-live="polite">График</span>
+      </div>
+      <div class="summary-grid" role="list">
+        <div class="summary-item" role="listitem">
+          <div class="summary-value" id="sumWorkDays" aria-label="Количество рабочих дней">0</div>
+          <div class="summary-label">Раб. дней</div>
+        </div>
+        <div class="summary-item" role="listitem">
+          <div class="summary-value" id="sumHours" aria-label="Количество зачтённых часов">0</div>
+          <div class="summary-label">Часов (зачёт)</div>
+        </div>
+        <div class="summary-item" role="listitem">
+          <div class="summary-value" id="sumNights" aria-label="Количество ночных смен">0</div>
+          <div class="summary-label">Ночных</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SALARY CARD -->
+    <section class="card" aria-labelledby="salaryTitle">
+      <div class="card-header">
+        <h2 id="salaryTitle">Расчёт зарплаты</h2>
+      </div>
+      <div class="calc-section">
+
+        <div id="manualHoursBlock" style="display:none">
+          <label class="field-label" for="manualHoursInput">Часов за месяц (без графика)</label>
+          <input type="number" class="input-field" id="manualHoursInput" placeholder="Введите часы" min="0" max="400" step="0.5" aria-describedby="manualHoursHelp">
+          <span id="manualHoursHelp" class="sr-only">Введите количество часов от 0 до 400</span>
+        </div>
+
+        <div class="calc-row" id="hoursCalcRow">
+          <span class="calc-row-label">Часов (зачёт)</span>
+          <span class="calc-row-value" id="calcHoursVal" aria-live="polite">0</span>
+        </div>
+
+        <div class="calc-row">
+          <span class="calc-row-label">Оклад</span>
+          <span class="calc-row-value" id="calcSalaryBase" aria-live="polite">—</span>
+        </div>
+
+        <div class="calc-row">
+          <span class="calc-row-label">Норма часов</span>
+          <span class="calc-row-value">165 ч</span>
+        </div>
+
+        <div>
+          <label class="field-label" for="ktuInput">КТУ (коэффициент трудового участия)</label>
+          <input type="number" class="input-field" id="ktuInput" placeholder="Например: 2.55" min="0" max="10" step="0.01" aria-describedby="ktuHelp">
+          <span id="ktuHelp" class="sr-only">Введите коэффициент от 0 до 10</span>
+        </div>
+
+        <!-- Кнопки экспорта -->
+        <div style="display:flex; gap:8px; margin-top:8px">
+          <button class="btn-secondary" id="exportCsvBtn" style="flex:1; font-size:13px; padding:10px">📤 CSV</button>
+          <button class="btn-secondary" id="backupBtn" style="flex:1; font-size:13px; padding:10px">💾 Бэкап</button>
+          <button class="btn-secondary" id="restoreBtn" style="flex:1; font-size:13px; padding:10px">📥 Восст.</button>
+        </div>
+        <input type="file" id="restoreInput" accept=".json" class="sr-only">
+
+      </div>
+
+      <div class="salary-card" id="salaryCard" aria-live="polite">
+        <div class="salary-label-text" id="salaryLabelText">ВЫБЕРИТЕ ДОЛЖНОСТЬ</div>
+        <div class="salary-amount" id="salaryAmount">—</div>
+        <div class="salary-formula" id="salaryFormula"></div>
+      </div>
+    </section>
+
+    <div class="bottom-space"></div>
+  </main>
+
+  <!-- DAY EDITOR MODAL -->
+  <div class="modal-overlay hidden" id="dayModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal-handle" aria-hidden="true"></div>
+      <h3 class="modal-title" id="modalTitle">1 апреля</h3>
+      <div class="modal-date-info" id="modalDateInfo">понедельник</div>
+
+      <div class="modal-section">
+        <div class="modal-section-title" id="shiftTypeLabel">Тип смены</div>
+        <div class="shift-grid" id="shiftGrid" role="radiogroup" aria-labelledby="shiftTypeLabel">
+          <button class="shift-btn shift-day" data-type="day" role="radio" aria-checked="false" aria-label="Дневная смена, 11 часов зачёт">
+            <span class="shift-btn-icon" aria-hidden="true">☀️</span>
+            <span class="shift-btn-label">День</span>
+            <span class="shift-btn-hours" id="shiftHintDay"></span>
+          </button>
+          <button class="shift-btn shift-night" data-type="night" role="radio" aria-checked="false" aria-label="Ночная смена, 11 часов зачёт">
+            <span class="shift-btn-icon" aria-hidden="true">🌙</span>
+            <span class="shift-btn-label">Ночь</span>
+            <span class="shift-btn-hours" id="shiftHintNight"></span>
+          </button>
+          <button class="shift-btn shift-sleep" data-type="sleep" role="radio" aria-checked="false" aria-label="Отсыпной день">
+            <span class="shift-btn-icon" aria-hidden="true">😴</span>
+            <span class="shift-btn-label">Отсыпной</span>
+            <span class="shift-btn-hours">0 ч</span>
+          </button>
+          <button class="shift-btn shift-off" data-type="off" role="radio" aria-checked="false" aria-label="Выходной день">
+            <span class="shift-btn-icon" aria-hidden="true">🟢</span>
+            <span class="shift-btn-label">Выходной</span>
+            <span class="shift-btn-hours">0 ч</span>
+          </button>
+          <button class="shift-btn shift-extra" data-type="extra" role="radio" aria-checked="false" aria-label="Дополнительная смена">
+            <span class="shift-btn-icon" aria-hidden="true">⚡</span>
+            <span class="shift-btn-label">Доп. смена</span>
+            <span class="shift-btn-hours">по выбору</span>
+          </button>
+          <button class="shift-btn shift-none" data-type="none" role="radio" aria-checked="false" aria-label="Смена не задана">
+            <span class="shift-btn-icon" aria-hidden="true">—</span>
+            <span class="shift-btn-label">Не задан</span>
+            <span class="shift-btn-hours">0 ч</span>
+          </button>
+        </div>
+
+        <div id="extraDurSection" style="display:none; margin-top:10px;">
+          <div class="field-label" style="margin-bottom:6px" id="extraDurLabel">Длительность доп. смены</div>
+          <div class="extra-dur-row" role="radiogroup" aria-labelledby="extraDurLabel">
+            <button class="extra-dur-btn active" data-edur="12" role="radio" aria-checked="true">12 ч → 11 зачёт</button>
+            <button class="extra-dur-btn" data-edur="9" role="radio" aria-checked="false">9 ч → 8 зачёт</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section" id="hoursSection">
+        <div class="modal-section-title">Фактические часы (зачёт)</div>
+        <div class="hours-adjuster">
+          <button class="adj-btn" id="hoursDown" aria-label="Уменьшить на 0.5 часа">−</button>
+          <label for="hoursInput" class="sr-only">Количество часов</label>
+          <input class="adj-input" type="number" id="hoursInput" min="0" max="24" step="0.5" aria-describedby="hoursHelp">
+          <button class="adj-btn" id="hoursUp" aria-label="Увеличить на 0.5 часа">+</button>
+        </div>
+        <div id="hoursHelp" style="font-size:11px; color:var(--text-muted); margin-top:6px">
+          Можно изменить, если работали не полную смену
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">
+          <label for="noteInput">Заметка</label>
+        </div>
+        <textarea class="input-field" id="noteInput" placeholder="Заметка к этому дню (необязательно)..." aria-describedby="noteHelp"></textarea>
+        <span id="noteHelp" class="sr-only">Необязательное текстовое примечание</span>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-primary" id="saveDayBtn">Сохранить</button>
+        <button class="btn-secondary" id="cancelDayBtn">Отмена</button>
+      </div>
     </div>
   </div>
-</div>
-
-<script>
-// ─── POSITIONS ────────────────────────────────────────────────────────────────
-const POSITIONS = {
-  'РТС': {
-    salary: 33850, hoursPerShift: 11, shiftHours: 12,
-    cycleType: 'cyclic', cycle: ['day','day','off','off'],
-    dayTimeWD: '11:00', dayTimeWE: '09:00',
-    hasNight: false, hasSleep: false, is5x2: false
-  },
-  'Прессовщик': {
-    salary: 33850, hoursPerShift: 11, shiftHours: 12,
-    cycleType: 'cyclic', cycle: ['day','day','off','off'],
-    dayTimeWD: '11:00', dayTimeWE: '09:00',
-    hasNight: false, hasSleep: false, is5x2: false
-  },
-  'Водитель склад': {
-    salary: 34500, hoursPerShift: 8, shiftHours: 9,
-    cycleType: '5x2',
-    hasNight: false, hasSleep: false, is5x2: true
-  },
-  'Водитель смена': {
-    salary: 34500, hoursPerShift: 11, shiftHours: 12,
-    cycleType: 'cyclic', cycle: ['day','day','off','off'],
-    dayTimeWD: '11:00', dayTimeWE: '09:00',
-    hasNight: false, hasSleep: false, is5x2: false
-  },
-  'Разнорабочий': {
-    salary: 33850, hoursPerShift: 8, shiftHours: 9,
-    cycleType: '5x2',
-    hasNight: false, hasSleep: false, is5x2: true
-  },
-  'Упаковщик': {
-    salary: 33850, hoursPerShift: 11, shiftHours: 12,
-    cycleType: 'cyclic', cycle: ['day','day','off','off'],
-    dayTimeCustom: true,
-    hasNight: false, hasSleep: false, is5x2: false
-  },
-  'Диспетчер': {
-    salary: 34500, hoursPerShift: 11, shiftHours: 12,
-    cycleType: 'cyclic', cycle: ['day','day','off','off'],
-    dayTimeWD: '11:00', dayTimeWE: '09:00',
-    hasNight: false, hasSleep: false, is5x2: false
-  },
-  'Начальник смены': {
-    salary: 37500, hoursPerShift: 11, shiftHours: 12,
-    cycleType: 'cyclic', cycle: ['day','day','off','off','night','night','off','off'],
-    dayTimeWD: '11:00', dayTimeWE: '09:00',
-    nightTimeWD: '23:00', nightTimeWE: '21:00',
-    hasNight: true, hasSleep: false, is5x2: false
-  },
-  'Мельник': {
-    salary: 33850, hoursPerShift: 11, shiftHours: 12,
-    cycleType: 'cyclic', cycle: ['day','day','off','off','night','night','off','off'],
-    dayTimeWD: '11:00', dayTimeWE: '09:00',
-    nightTimeWD: '23:00', nightTimeWE: '21:00',
-    hasNight: true, hasSleep: false, is5x2: false
-  },
-  'Автоклавщик': {
-    salary: 33850, hoursPerShift: 11, shiftHours: 12,
-    cycleType: 'cyclic', cycle: ['day','night','sleep','off'],
-    dayTime: '09:00', nightTime: '21:00',
-    hasNight: true, hasSleep: true, is5x2: false
-  }
-};
-
-const SHIFT_LABEL = { day:'День', night:'Ночь', sleep:'Отсыпной', off:'Выходной', extra:'Доп.', none:'' };
-const SHIFT_CLASS = { day:'shift-day', night:'shift-night', sleep:'shift-sleep', off:'shift-off', extra:'shift-extra', none:'shift-none' };
-const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-const MONTH_NAMES_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
-const DAY_NAMES_LONG = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
-const DAY_NAMES_HEADER = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
-
-// ─── STATE ────────────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'zp_calc_v3';
-let state = {
-  position: '',
-  mode: 'schedule',
-  year: new Date().getFullYear(),
-  month: new Date().getMonth(),
-  cycleStartDate: '',
-  cycleStartType: '',
-  months: {}
-};
-
-function loadState() {
-  try {
-    const s = localStorage.getItem(STORAGE_KEY);
-    if (s) { const p = JSON.parse(s); Object.assign(state, p); }
-  } catch(e) {}
-}
-
-function saveState() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
-}
-
-function monthKey(y, m) { return `${y}-${String(m+1).padStart(2,'0')}`; }
-
-function monthData(y, m) {
-  const k = monthKey(y, m);
-  if (!state.months[k]) state.months[k] = { ktu: null, manualHours: null, cells: {} };
-  return state.months[k];
-}
-
-function cellKey(y, m, d) { return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
-
-// ─── SCHEDULE LOGIC ───────────────────────────────────────────────────────────
-function isWeekend(y, m, d) { const dow = new Date(y,m,d).getDay(); return dow===0||dow===6; }
-function dayOfWeek(y, m, d) { return new Date(y,m,d).getDay(); }
-
-function autoShift(pos, y, m, d) {
-  if (!pos || !state.cycleStartDate || !state.cycleStartType) return null;
-  const cfg = POSITIONS[pos];
-  if (!cfg) return null;
-
-  if (cfg.is5x2) {
-    const dow = dayOfWeek(y, m, d);
-    return (dow===0||dow===6) ? 'off' : 'day';
-  }
-
-  if (cfg.cycleType === 'cyclic') {
-    const cycle = cfg.cycle;
-    const startIdx = cycle.indexOf(state.cycleStartType);
-    if (startIdx === -1) return null;
-    const startDate = new Date(state.cycleStartDate);
-    const target = new Date(y, m, d);
-    const diff = Math.round((target - startDate) / 86400000);
-    const idx = ((startIdx + diff) % cycle.length + cycle.length) % cycle.length;
-    return cycle[idx];
-  }
-  return null;
-}
-
-function effectiveShift(pos, y, m, d) {
-  const md = monthData(y, m);
-  const ck = cellKey(y, m, d);
-  if (md.cells[ck]) return md.cells[ck].type;
-  if (state.mode === 'schedule') return autoShift(pos, y, m, d) || 'none';
-  return 'none';
-}
-
-function shiftHours(pos, type, extraDur) {
-  if (!pos) return 0;
-  const cfg = POSITIONS[pos];
-  if (!cfg) return 0;
-  switch(type) {
-    case 'day': return cfg.hoursPerShift;
-    case 'night': return cfg.hoursPerShift;
-    case 'sleep': return 0;
-    case 'off': return 0;
-    case 'extra': return extraDur === '9' ? 8 : 11;
-    default: return 0;
-  }
-}
-
-function monthStats(pos, y, m) {
-  if (!pos) return { hours:0, workDays:0, nights:0 };
-  const daysInMonth = new Date(y, m+1, 0).getDate();
-  const md = monthData(y, m);
-  let hours=0, workDays=0, nights=0;
-  for (let d=1; d<=daysInMonth; d++) {
-    const ck = cellKey(y, m, d);
-    let type, h;
-    if (md.cells[ck]) {
-      const cell = md.cells[ck];
-      type = cell.type;
-      h = (cell.hours !== null && cell.hours !== undefined) ? cell.hours : shiftHours(pos, type, cell.extraDur);
-    } else {
-      type = autoShift(pos, y, m, d) || 'none';
-      h = shiftHours(pos, type, null);
-    }
-    if (type !== 'off' && type !== 'sleep' && type !== 'none') { workDays++; hours += h; }
-    if (type === 'night') nights++;
-  }
-  return { hours, workDays, nights };
-}
-
-// ─── RENDER ───────────────────────────────────────────────────────────────────
-function renderAll() {
-  renderMonthHeader();
-  renderCalendar();
-  renderSummary();
-  renderSalary();
-  restoreInputs();
-  updateShiftHints();
-}
-
-function renderMonthHeader() {
-  document.getElementById('monthName').textContent = `${MONTH_NAMES[state.month]} ${state.year}`;
-}
-
-function renderCalendar() {
-  const grid = document.getElementById('calendarGrid');
-  const y = state.year, m = state.month;
-  const today = new Date();
-  const daysInMonth = new Date(y, m+1, 0).getDate();
-  const md = monthData(y, m);
-
-  let html = DAY_NAMES_HEADER.map(n => `<div class="day-header">${n}</div>`).join('');
-
-  const firstDow = new Date(y, m, 1).getDay();
-  const offset = firstDow === 0 ? 6 : firstDow - 1;
-  for (let i=0; i<offset; i++) html += '<div class="day-cell empty"></div>';
-
-  for (let d=1; d<=daysInMonth; d++) {
-    const ck = cellKey(y, m, d);
-    const isToday = today.getFullYear()===y && today.getMonth()===m && today.getDate()===d;
-    const cellData = md.cells[ck];
-    const isManualOverride = !!cellData;
-
-    let type = 'none';
-    if (cellData) { type = cellData.type; }
-    else if (state.mode === 'schedule' && state.position) { type = autoShift(state.position, y, m, d) || 'none'; }
-
-    const hasNote = cellData && cellData.note && cellData.note.trim();
-    const shClass = SHIFT_CLASS[type] || 'shift-none';
-    const lbl = SHIFT_LABEL[type] || '';
-    const todayCls = isToday ? ' today' : '';
-    const noteMark = hasNote ? '<span class="day-note-mark">✱</span>' : '';
-    const modMark = (isManualOverride && !cellData?.isAuto) ? '' : '';
-
-    html += `<div class="day-cell ${shClass}${todayCls}" onclick="openModal(${d})">
-      ${noteMark}
-      <div class="day-num">${d}</div>
-      <div class="day-label">${lbl}</div>
-    </div>`;
-  }
-
-  grid.innerHTML = html;
-}
-
-function renderSummary() {
-  const stats = monthStats(state.position, state.year, state.month);
-  document.getElementById('sumWorkDays').textContent = stats.workDays;
-  document.getElementById('sumHours').textContent = stats.hours;
-  document.getElementById('sumNights').textContent = stats.nights;
-  document.getElementById('summaryBadge').textContent = state.mode === 'schedule' ? 'График' : 'Вручную';
-  document.getElementById('calcHoursVal').textContent = state.mode === 'manual'
-    ? (monthData(state.year, state.month).manualHours || 0)
-    : stats.hours;
-}
-
-function renderSalary() {
-  const pos = state.position;
-  const cfg = pos ? POSITIONS[pos] : null;
-  const salary = cfg ? cfg.salary : null;
-  document.getElementById('calcSalaryBase').textContent = salary ? `${salary.toLocaleString('ru-RU')} ₽` : '—';
-
-  const md = monthData(state.year, state.month);
-  const ktu = md.ktu;
-
-  let hours;
-  if (state.mode === 'manual') {
-    hours = md.manualHours || 0;
-  } else {
-    hours = monthStats(pos, state.year, state.month).hours;
-  }
-
-  if (!salary || !hours) {
-    document.getElementById('salaryAmount').textContent = '—';
-    document.getElementById('salaryLabelText').textContent = salary ? 'ЗАПОЛНИТЕ ЧАСЫ' : 'ВЫБЕРИТЕ ДОЛЖНОСТЬ';
-    document.getElementById('salaryFormula').textContent = '';
-    return;
-  }
-
-  const k = ktu || 1;
-  const result = Math.round(salary * k / 165 * hours);
-  document.getElementById('salaryAmount').textContent = result.toLocaleString('ru-RU') + ' ₽';
-  document.getElementById('salaryLabelText').textContent = ktu ? `ЗАРПЛАТА (КТУ = ${ktu})` : 'ЗАРПЛАТА (КТУ = 1)';
-  document.getElementById('salaryFormula').textContent = `${salary.toLocaleString('ru-RU')} × ${k} ÷ 165 × ${hours} ч`;
-}
-
-function restoreInputs() {
-  const md = monthData(state.year, state.month);
-  const ktuEl = document.getElementById('ktuInput');
-  ktuEl.value = md.ktu !== null ? md.ktu : '';
-
-  const mhEl = document.getElementById('manualHoursInput');
-  mhEl.value = md.manualHours !== null ? md.manualHours : '';
-
-  document.getElementById('cycleStartDate').value = state.cycleStartDate || '';
-  document.getElementById('cycleStartType').value = state.cycleStartType || '';
-
-  const manualBlock = document.getElementById('manualHoursBlock');
-  const hoursCalcRow = document.getElementById('hoursCalcRow');
-  if (state.mode === 'manual') {
-    manualBlock.style.display = '';
-    hoursCalcRow.style.display = 'none';
-  } else {
-    manualBlock.style.display = 'none';
-    hoursCalcRow.style.display = '';
-  }
-
-  document.getElementById('modeSchedule').classList.toggle('active', state.mode === 'schedule');
-  document.getElementById('modeManual').classList.toggle('active', state.mode === 'manual');
-
-  updateCycleTypeOptions();
-  updateCycleInfo();
-}
-
-function updateShiftHints() {
-  const pos = state.position;
-  const cfg = pos ? POSITIONS[pos] : null;
-  if (cfg) {
-    document.getElementById('shiftHintDay').textContent = cfg.hoursPerShift + ' ч зачёт';
-    document.getElementById('shiftHintNight').textContent = cfg.hoursPerShift + ' ч зачёт';
-  }
-}
-
-function updateCycleTypeOptions() {
-  const pos = state.position;
-  const cfg = pos ? POSITIONS[pos] : null;
-  const sel = document.getElementById('cycleStartType');
-  const cur = sel.value;
-
-  if (!cfg || cfg.is5x2) {
-    sel.innerHTML = '<option value="">— нет (5×2 = авто) —</option>';
-    return;
-  }
-
-  const types = [...new Set(cfg.cycle || [])];
-  const icons = { day:'☀️ День', night:'🌙 Ночь', sleep:'😴 Отсыпной', off:'🟢 Выходной' };
-  let html = '<option value="">— выберите тип —</option>';
-  types.forEach(t => { html += `<option value="${t}">${icons[t]||t}</option>`; });
-  sel.innerHTML = html;
-  if (cur) sel.value = cur;
-}
-
-function updateCycleInfo() {
-  const el = document.getElementById('cycleInfo');
-  const pos = state.position;
-  const cfg = pos ? POSITIONS[pos] : null;
-  if (!cfg || !state.cycleStartDate || !state.cycleStartType) { el.style.display='none'; return; }
-  el.style.display='';
-  el.innerHTML = `<div class="info-box">
-    Цикл: <strong>${(cfg.cycle||['день','выходной']).map(t=>SHIFT_LABEL[t]||t).join(' → ')}</strong><br>
-    Дата начала: <strong>${state.cycleStartDate}</strong>, смена: <strong>${SHIFT_LABEL[state.cycleStartType]||state.cycleStartType}</strong>
-  </div>`;
-}
-
-// ─── MODAL ────────────────────────────────────────────────────────────────────
-let editDay = null;
-
-function openModal(d) {
-  editDay = d;
-  const y = state.year, m = state.month;
-  const date = new Date(y, m, d);
-  const dow = DAY_NAMES_LONG[date.getDay()];
-
-  document.getElementById('modalTitle').textContent = `${d} ${MONTH_NAMES_GEN[m]}`;
-  document.getElementById('modalDateInfo').textContent = `${dow}${isWeekend(y,m,d) ? ' · выходной день' : ''}`;
-
-  const md = monthData(y, m);
-  const ck = cellKey(y, m, d);
-  const cell = md.cells[ck];
-  const autoType = autoShift(state.position, y, m, d);
-  const curType = cell ? cell.type : (state.mode==='schedule' ? (autoType||'none') : 'none');
-  const curNote = cell ? (cell.note||'') : '';
-  const curExtraDur = cell ? (cell.extraDur||'12') : '12';
-  const curHours = (cell && cell.hours !== null && cell.hours !== undefined)
-    ? cell.hours
-    : shiftHours(state.position, curType, curExtraDur);
-
-  // Reset shift buttons
-  document.querySelectorAll('.shift-btn').forEach(b => {
-    b.classList.remove('active');
-    if (b.dataset.type === curType) b.classList.add('active');
-  });
-
-  // Extra dur
-  document.querySelectorAll('.extra-dur-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.edur === curExtraDur);
-  });
-  document.getElementById('extraDurSection').style.display = curType==='extra' ? '' : 'none';
-
-  // Hours
-  const showH = curType!=='off' && curType!=='sleep' && curType!=='none';
-  document.getElementById('hoursSection').style.display = showH ? '' : 'none';
-  document.getElementById('hoursInput').value = showH ? curHours : '';
-
-  document.getElementById('noteInput').value = curNote;
-  document.getElementById('dayModal').classList.remove('hidden');
-}
-
-function closeModal() {
-  document.getElementById('dayModal').classList.add('hidden');
-  editDay = null;
-}
-
-function saveDay() {
-  if (editDay === null) return;
-  const y = state.year, m = state.month, d = editDay;
-  const md = monthData(y, m);
-  const ck = cellKey(y, m, d);
-
-  const type = document.querySelector('.shift-btn.active')?.dataset.type || 'none';
-  const extraDur = document.querySelector('.extra-dur-btn.active')?.dataset.edur || '12';
-  const note = document.getElementById('noteInput').value.trim();
-  const hoursRaw = parseFloat(document.getElementById('hoursInput').value);
-  const defHours = shiftHours(state.position, type, extraDur);
-  const hours = (isNaN(hoursRaw) || type==='off' || type==='sleep' || type==='none') ? defHours : hoursRaw;
-
-  // If matches auto and no note — remove override
-  const autoType = autoShift(state.position, y, m, d);
-  const hoursMatch = Math.abs(hours - defHours) < 0.01;
-  if (type === (autoType||'none') && hoursMatch && !note && state.mode==='schedule') {
-    delete md.cells[ck];
-  } else {
-    md.cells[ck] = { type, hours: (type==='off'||type==='sleep'||type==='none') ? 0 : hours, note, extraDur };
-  }
-
-  saveState();
-  closeModal();
-  renderAll();
-}
-
-// ─── EVENTS ───────────────────────────────────────────────────────────────────
-document.getElementById('positionSelect').addEventListener('change', function() {
-  state.position = this.value;
-  saveState();
-  renderAll();
-});
-
-document.getElementById('prevMonth').addEventListener('click', () => {
-  if (state.month===0) { state.month=11; state.year--; } else state.month--;
-  renderAll();
-});
-document.getElementById('nextMonth').addEventListener('click', () => {
-  if (state.month===11) { state.month=0; state.year++; } else state.month++;
-  renderAll();
-});
-
-document.getElementById('modeSchedule').addEventListener('click', () => {
-  state.mode = 'schedule'; saveState(); renderAll();
-});
-document.getElementById('modeManual').addEventListener('click', () => {
-  state.mode = 'manual'; saveState(); renderAll();
-});
-
-document.getElementById('settingsToggle').addEventListener('click', () => {
-  const panel = document.getElementById('settingsPanel');
-  const chevron = document.getElementById('settingsChevron');
-  const isOpen = panel.classList.contains('open');
-  panel.classList.toggle('open', !isOpen);
-  chevron.classList.toggle('open', !isOpen);
-});
-
-document.getElementById('applyAutoBtn').addEventListener('click', () => {
-  const sd = document.getElementById('cycleStartDate').value;
-  const st = document.getElementById('cycleStartType').value;
-  if (!sd || (!st && !POSITIONS[state.position]?.is5x2)) {
-    alert('Выберите дату и тип смены'); return;
-  }
-  state.cycleStartDate = sd;
-  state.cycleStartType = st;
-  saveState();
-  updateCycleInfo();
-  renderAll();
-  document.getElementById('settingsPanel').classList.remove('open');
-  document.getElementById('settingsChevron').classList.remove('open');
-});
-
-document.getElementById('clearMonthBtn').addEventListener('click', () => {
-  if (!confirm('Очистить все ручные правки этого месяца?')) return;
-  const md = monthData(state.year, state.month);
-  md.cells = {};
-  saveState();
-  renderAll();
-});
-
-document.getElementById('ktuInput').addEventListener('input', function() {
-  const v = parseFloat(this.value);
-  monthData(state.year, state.month).ktu = isNaN(v) ? null : v;
-  saveState();
-  renderSalary();
-  renderSummary();
-});
-
-document.getElementById('manualHoursInput').addEventListener('input', function() {
-  const v = parseFloat(this.value);
-  monthData(state.year, state.month).manualHours = isNaN(v) ? null : v;
-  saveState();
-  renderSummary();
-  renderSalary();
-});
-
-document.getElementById('cycleStartDate').addEventListener('change', function() {
-  state.cycleStartDate = this.value;
-});
-document.getElementById('cycleStartType').addEventListener('change', function() {
-  state.cycleStartType = this.value;
-});
-
-// Shift buttons in modal
-document.querySelectorAll('.shift-btn').forEach(btn => {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.shift-btn').forEach(b => b.classList.remove('active'));
-    this.classList.add('active');
-    const type = this.dataset.type;
-    const showH = type!=='off' && type!=='sleep' && type!=='none';
-    document.getElementById('hoursSection').style.display = showH ? '' : 'none';
-    document.getElementById('extraDurSection').style.display = type==='extra' ? '' : 'none';
-    if (showH) {
-      const dur = document.querySelector('.extra-dur-btn.active')?.dataset.edur || '12';
-      document.getElementById('hoursInput').value = shiftHours(state.position, type, dur);
-    }
-  });
-});
-
-// Extra duration buttons
-document.querySelectorAll('.extra-dur-btn').forEach(btn => {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.extra-dur-btn').forEach(b => b.classList.remove('active'));
-    this.classList.add('active');
-    document.getElementById('hoursInput').value = this.dataset.edur === '9' ? 8 : 11;
-  });
-});
-
-document.getElementById('hoursDown').addEventListener('click', () => {
-  const inp = document.getElementById('hoursInput');
-  inp.value = Math.max(0, (parseFloat(inp.value)||0) - 0.5);
-});
-document.getElementById('hoursUp').addEventListener('click', () => {
-  const inp = document.getElementById('hoursInput');
-  inp.value = Math.min(24, (parseFloat(inp.value)||0) + 0.5);
-});
-
-document.getElementById('saveDayBtn').addEventListener('click', saveDay);
-document.getElementById('cancelDayBtn').addEventListener('click', closeModal);
-document.getElementById('dayModal').addEventListener('click', e => { if (e.target===document.getElementById('dayModal')) closeModal(); });
-
-// ─── PWA ─────────────────────────────────────────────────────────────────────
-function injectManifest() {
-  const manifest = {
-    name: 'График смен',
-    short_name: 'График смен',
-    description: 'График смен и расчёт зарплаты',
-    start_url: './',
-    display: 'standalone',
-    orientation: 'portrait',
-    background_color: '#1e293b',
-    theme_color: '#1e293b',
-    icons: [{
-      src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%231e293b'/%3E%3Ctext x='96' y='130' text-anchor='middle' font-size='110' font-family='Apple Color Emoji,Segoe UI Emoji,sans-serif'%3E%F0%9F%93%85%3C/text%3E%3C/svg%3E",
-      sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable'
-    }]
-  };
-  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-  document.getElementById('manifest-link').href = URL.createObjectURL(blob);
-}
-
-function registerSW() {
-  if (!('serviceWorker' in navigator)) return;
-  const swSrc = `
-const CACHE='zp-calc-v3';
-self.addEventListener('install',e=>{self.skipWaiting();});
-self.addEventListener('activate',e=>{
-  e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
-  clients.claim();
-});
-self.addEventListener('fetch',e=>{
-  if(e.request.method!=='GET')return;
-  e.respondWith(
-    caches.open(CACHE).then(cache=>
-      cache.match(e.request).then(cached=>{
-        const net=fetch(e.request).then(res=>{if(res.ok)cache.put(e.request,res.clone());return res;}).catch(()=>cached);
-        return cached||net;
-      })
-    )
-  );
-});`;
-  try {
-    const blob = new Blob([swSrc], { type: 'application/javascript' });
-    const url = URL.createObjectURL(blob);
-    navigator.serviceWorker.register(url, { scope: './' }).catch(() => {});
-  } catch(e) {}
-}
-
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-function init() {
-  // Populate position selector
-  const sel = document.getElementById('positionSelect');
-  Object.keys(POSITIONS).forEach(name => {
-    const opt = document.createElement('option');
-    opt.value = name; opt.textContent = name;
-    sel.appendChild(opt);
-  });
-
-  loadState();
-  if (state.position) sel.value = state.position;
-
-  injectManifest();
-  registerSW();
-  renderAll();
-}
-
-init();
-</script>
-<script src="./График смен_files/replit-pill.global.js.Без названия" data-repl-id="a8465c40-8300-4f4b-a021-7b7e595cac16"></script>
-
-<div id="replit-pill-host"><template shadowrootmode="closed"><style>
-        #replit-pill {
-          position: fixed;
-          bottom: 48px;
-          right: 48px;
-          border-radius: 120px;
-          font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-          font-size: 12px;
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 6px 12px;
-          z-index: 1000000;
-          white-space: nowrap;
-          cursor: pointer;
-          overflow: hidden;
-          background-color: rgba(0, 0, 0, 0.4);
-          backdrop-filter: blur(6px);
-          -webkit-backdrop-filter: blur(6px);
-          color: #f0f2f6;
-          box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.05), 1px 1px 1px 0px rgba(255, 255, 255, 0.1);
-          transition: transform 0.2s ease;
+
+  <!-- Скрипты -->
+  <script type="module" src="app.js"></script>
+  <script>
+    // ─── UI-СЛОЙ (интеграция с app.js) ─────────────────────────────────────
+    import {
+      state, loadState, saveState, getMonthData, cellKey,
+      autoShift, effectiveShift, shiftHours, monthStats,
+      sanitizeNumber, calculateSalary, formatRubles,
+      exportMonthToCSV, downloadFile, exportBackup, importBackup,
+      debounce
+    } from './app.js';
+
+    // ─── ГЛОБАЛЬНЫЕ ФУНКЦИИ ДЛЯ HTML (через onclick) ───────────────────────
+    window.openModal = function(day) {
+      AppUI.openDayModal(day);
+    };
+
+    // ─── UI CONTROLLER ─────────────────────────────────────────────────────
+    const AppUI = {
+      editDay: null,
+
+      init() {
+        this.populatePositionSelect();
+        loadState();
+        this.restoreFormValues();
+        this.bindEvents();
+        this.renderAll();
+        this.registerServiceWorker();
+      },
+
+      populatePositionSelect() {
+        const sel = document.getElementById('positionSelect');
+        Object.keys(POSITIONS).forEach(name => {
+          const opt = document.createElement('option');
+          opt.value = name; opt.textContent = name;
+          sel.appendChild(opt);
+        });
+      },
+
+      bindEvents() {
+        // Выбор должности
+        document.getElementById('positionSelect').addEventListener('change', (e) => {
+          state.position = e.target.value;
+          saveState();
+          this.renderAll();
+        });
+
+        // Навигация по месяцам
+        document.getElementById('prevMonth').addEventListener('click', () => {
+          if (state.month === 0) { state.month = 11; state.year--; } 
+          else state.month--;
+          this.renderAll();
+        });
+        document.getElementById('nextMonth').addEventListener('click', () => {
+          if (state.month === 11) { state.month = 0; state.year++; } 
+          else state.month++;
+          this.renderAll();
+        });
+
+        // Переключение режима
+        document.getElementById('modeSchedule').addEventListener('click', () => {
+          state.mode = 'schedule'; saveState(); this.renderAll();
+        });
+        document.getElementById('modeManual').addEventListener('click', () => {
+          state.mode = 'manual'; saveState(); this.renderAll();
+        });
+
+        // Настройки
+        document.getElementById('settingsToggle').addEventListener('click', () => {
+          const panel = document.getElementById('settingsPanel');
+          const btn = document.getElementById('settingsToggle');
+          const chevron = document.getElementById('settingsChevron');
+          const isOpen = panel.classList.contains('open');
+          panel.classList.toggle('open', !isOpen);
+          chevron.classList.toggle('open', !isOpen);
+          btn.setAttribute('aria-expanded', String(!isOpen));
+        });
+
+        document.getElementById('applyAutoBtn').addEventListener('click', () => {
+          const sd = document.getElementById('cycleStartDate').value;
+          const st = document.getElementById('cycleStartType').value;
+          const cfg = POSITIONS[state.position];
+          
+          if (!sd || (!st && !cfg?.is5x2)) {
+            alert('Выберите дату и тип смены'); return;
+          }
+          state.cycleStartDate = sd;
+          state.cycleStartType = st;
+          saveState();
+          this.updateCycleInfo();
+          this.renderAll();
+          this.closeSettings();
+        });
+
+        document.getElementById('clearMonthBtn').addEventListener('click', () => {
+          if (!confirm('Очистить все ручные правки этого месяца?')) return;
+          const md = getMonthData(state.year, state.month);
+          md.cells = {};
+          saveState();
+          this.renderAll();
+        });
+
+        // Поля ввода с валидацией и debounce
+        const debouncedRender = debounce(() => {
+          this.renderSalary();
+          this.renderSummary();
+        }, 150);
+
+        document.getElementById('ktuInput').addEventListener('input', function() {
+          const v = sanitizeNumber(this.value, 0, 10, 0.01);
+          getMonthData(state.year, state.month).ktu = v;
+          saveState();
+          debouncedRender();
+        });
+
+        document.getElementById('manualHoursInput').addEventListener('input', function() {
+          const v = sanitizeNumber(this.value, 0, 400, 0.5);
+          getMonthData(state.year, state.month).manualHours = v;
+          saveState();
+          debouncedRender();
+        });
+
+        document.getElementById('cycleStartDate').addEventListener('change', (e) => {
+          state.cycleStartDate = e.target.value;
+        });
+        document.getElementById('cycleStartType').addEventListener('change', (e) => {
+          state.cycleStartType = e.target.value;
+        });
+
+        // Кнопки экспорта/импорта
+        document.getElementById('exportCsvBtn').addEventListener('click', () => {
+          if (!state.position) { alert('Выберите должность'); return; }
+          const csv = exportMonthToCSV(state.year, state.month, state.position);
+          const fname = `график-${state.position}-${state.year}-${String(state.month+1).padStart(2,'0')}.csv`;
+          downloadFile(csv, fname, 'text/csv');
+        });
+
+        document.getElementById('backupBtn').addEventListener('click', exportBackup);
+
+        document.getElementById('restoreBtn').addEventListener('click', () => {
+          document.getElementById('restoreInput').click();
+        });
+        document.getElementById('restoreInput').addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            const result = importBackup(evt.target.result);
+            if (result.success) {
+              alert('✅ Данные восстановлены');
+              this.renderAll();
+            } else {
+              alert('❌ Ошибка: ' + result.error);
+            }
+            e.target.value = ''; // сброс
+          };
+          reader.readAsText(file);
+        });
+
+        // Модальное окно
+        document.getElementById('saveDayBtn').addEventListener('click', () => this.saveDay());
+        document.getElementById('cancelDayBtn').addEventListener('click', () => this.closeModal());
+        document.getElementById('dayModal').addEventListener('click', (e) => {
+          if (e.target === document.getElementById('dayModal')) this.closeModal();
+        });
+
+        // Кнопки смен в модалке
+        document.querySelectorAll('.shift-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            document.querySelectorAll('.shift-btn').forEach(b => {
+              b.classList.remove('active');
+              b.setAttribute('aria-checked', 'false');
+            });
+            this.classList.add('active');
+            this.setAttribute('aria-checked', 'true');
+            
+            const type = this.dataset.type;
+            const showH = type !== 'off' && type !== 'sleep' && type !== 'none';
+            document.getElementById('hoursSection').style.display = showH ? '' : 'none';
+            document.getElementById('extraDurSection').style.display = type === 'extra' ? '' : 'none';
+            
+            if (showH) {
+              const dur = document.querySelector('.extra-dur-btn.active')?.dataset.edur || '12';
+              document.getElementById('hoursInput').value = shiftHours(state.position, type, dur);
+            }
+          });
+        });
+
+        // Длительность доп. смены
+        document.querySelectorAll('.extra-dur-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            document.querySelectorAll('.extra-dur-btn').forEach(b => {
+              b.classList.remove('active');
+              b.setAttribute('aria-checked', 'false');
+            });
+            this.classList.add('active');
+            this.setAttribute('aria-checked', 'true');
+            document.getElementById('hoursInput').value = this.dataset.edur === '9' ? 8 : 11;
+          });
+        });
+
+        // Регулировка часов
+        document.getElementById('hoursDown').addEventListener('click', () => {
+          const inp = document.getElementById('hoursInput');
+          const val = sanitizeNumber(inp.value, 0, 24, 0.5);
+          inp.value = val !== null ? Math.max(0, val - 0.5) : 0;
+        });
+        document.getElementById('hoursUp').addEventListener('click', () => {
+          const inp = document.getElementById('hoursInput');
+          const val = sanitizeNumber(inp.value, 0, 24, 0.5);
+          inp.value = val !== null ? Math.min(24, val + 0.5) : 0;
+        });
+      },
+
+      closeSettings() {
+        const panel = document.getElementById('settingsPanel');
+        const btn = document.getElementById('settingsToggle');
+        const chevron = document.getElementById('settingsChevron');
+        panel.classList.remove('open');
+        chevron.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+      },
+
+      // ─── RENDER ─────────────────────────────────────────────────────────
+      renderAll() {
+        this.renderMonthHeader();
+        this.renderCalendar();
+        this.renderSummary();
+        this.renderSalary();
+        this.restoreFormValues();
+        this.updateShiftHints();
+        this.updateCycleTypeOptions();
+        this.updateCycleInfo();
+      },
+
+      renderMonthHeader() {
+        document.getElementById('monthName').textContent = `${MONTH_NAMES[state.month]} ${state.year}`;
+      },
+
+      renderCalendar() {
+        const grid = document.getElementById('calendarGrid');
+        const y = state.year, m = state.month;
+        const today = new Date();
+        const daysInMonth = new Date(y, m + 1, 0).getDate();
+        const md = getMonthData(y, m);
+
+        let html = DAY_NAMES_HEADER.map(n => `<div class="day-header" role="columnheader">${n}</div>`).join('');
+
+        const firstDow = new Date(y, m, 1).getDay();
+        const offset = firstDow === 0 ? 6 : firstDow - 1;
+        for (let i = 0; i < offset; i++) html += '<div class="day-cell empty" tabindex="-1"></div>';
+
+        for (let d = 1; d <= daysInMonth; d++) {
+          const ck = cellKey(y, m, d);
+          const isToday = today.getFullYear() === y && today.getMonth() === m && today.getDate() === d;
+          const cellData = md.cells[ck];
+          const isManualOverride = !!cellData;
+
+          let type = 'none';
+          if (cellData) { type = cellData.type; }
+          else if (state.mode === 'schedule' && state.position) { 
+            type = autoShift(state.position, y, m, d) || 'none'; 
+          }
+
+          const hasNote = cellData && cellData.note && cellData.note.trim();
+          const shClass = SHIFT_CLASS[type] || 'shift-none';
+          const lbl = SHIFT_LABEL[type] || '';
+          const todayCls = isToday ? ' today' : '';
+          const noteMark = hasNote ? '<span class="day-note-mark" aria-label="Есть заметка">✱</span>' : '';
+          
+          // ARIA для доступности
+          const ariaLabel = `${d} ${MONTH_NAMES_GEN[m]}: ${lbl || 'не задано'}${hasNote ? ', есть заметка' : ''}`;
+
+          html += `<div class="day-cell ${shClass}${todayCls}" 
+                      onclick="openModal(${d})" 
+                      role="gridcell"
+                      tabindex="0"
+                      aria-label="${ariaLabel}">
+            ${noteMark}
+            <div class="day-num">${d}</div>
+            <div class="day-label">${lbl}</div>
+          </div>`;
         }
-        #replit-pill:hover {
-          transform: scale(1.05);
+
+        grid.innerHTML = html;
+      },
+
+      renderSummary() {
+        const stats = monthStats(state.position, state.year, state.month);
+        document.getElementById('sumWorkDays').textContent = stats.workDays;
+        document.getElementById('sumHours').textContent = stats.hours;
+        document.getElementById('sumNights').textContent = stats.nights;
+        document.getElementById('summaryBadge').textContent = state.mode === 'schedule' ? 'График' : 'Вручную';
+        
+        const hours = state.mode === 'manual'
+          ? (getMonthData(state.year, state.month).manualHours || 0)
+          : stats.hours;
+        document.getElementById('calcHoursVal').textContent = hours;
+      },
+
+      renderSalary() {
+        const pos = state.position;
+        const cfg = pos ? POSITIONS[pos] : null;
+        const salary = cfg ? cfg.salary : null;
+        
+        document.getElementById('calcSalaryBase').textContent = salary ? formatRubles(salary) : '—';
+
+        const md = getMonthData(state.year, state.month);
+        const ktu = md.ktu;
+
+        let hours;
+        if (state.mode === 'manual') {
+          hours = md.manualHours || 0;
+        } else {
+          hours = monthStats(pos, state.year, state.month).hours;
         }
-        #replit-pill .shimmer {
-          position: absolute;
-          inset: 0;
-          transform: translateX(-100%);
-          transition: transform 0.7s ease-in-out;
-          background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
-          pointer-events: none;
+
+        if (!salary || !hours) {
+          document.getElementById('salaryAmount').textContent = '—';
+          document.getElementById('salaryLabelText').textContent = salary ? 'ЗАПОЛНИТЕ ЧАСЫ' : 'ВЫБЕРИТЕ ДОЛЖНОСТЬ';
+          document.getElementById('salaryFormula').textContent = '';
+          return;
         }
-        #replit-pill:hover .shimmer {
-          transform: translateX(100%);
+
+        const k = ktu || 1;
+        const result = calculateSalary({ baseSalary: salary, hours, ktu: k });
+        
+        document.getElementById('salaryAmount').textContent = result ? formatRubles(result) : '—';
+        document.getElementById('salaryLabelText').textContent = ktu ? `ЗАРПЛАТА (КТУ = ${ktu})` : 'ЗАРПЛАТА (КТУ = 1)';
+        document.getElementById('salaryFormula').textContent = `${formatRubles(salary)} × ${k} ÷ ${NORM_HOURS} × ${hours} ч`;
+      },
+
+      restoreFormValues() {
+        const md = getMonthData(state.year, state.month);
+        document.getElementById('ktuInput').value = md.ktu !== null ? md.ktu : '';
+        document.getElementById('manualHoursInput').value = md.manualHours !== null ? md.manualHours : '';
+        document.getElementById('cycleStartDate').value = state.cycleStartDate || '';
+        document.getElementById('cycleStartType').value = state.cycleStartType || '';
+
+        const manualBlock = document.getElementById('manualHoursBlock');
+        const hoursCalcRow = document.getElementById('hoursCalcRow');
+        if (state.mode === 'manual') {
+          manualBlock.style.display = '';
+          hoursCalcRow.style.display = 'none';
+        } else {
+          manualBlock.style.display = 'none';
+          hoursCalcRow.style.display = '';
         }
-        #replit-pill .badge-content {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          position: relative;
-          flex: 0 0 auto;
+
+        document.getElementById('modeSchedule').classList.toggle('active', state.mode === 'schedule');
+        document.getElementById('modeSchedule').setAttribute('aria-selected', state.mode === 'schedule');
+        document.getElementById('modeManual').classList.toggle('active', state.mode === 'manual');
+        document.getElementById('modeManual').setAttribute('aria-selected', state.mode === 'manual');
+      },
+
+      updateShiftHints() {
+        const pos = state.position;
+        const cfg = pos ? POSITIONS[pos] : null;
+        if (cfg) {
+          document.getElementById('shiftHintDay').textContent = cfg.hoursPerShift + ' ч зачёт';
+          document.getElementById('shiftHintNight').textContent = cfg.hoursPerShift + ' ч зачёт';
         }
-        #replit-pill .replit-logo {
-          color: #f0f2f6;
+      },
+
+      updateCycleTypeOptions() {
+        const pos = state.position;
+        const cfg = pos ? POSITIONS[pos] : null;
+        const sel = document.getElementById('cycleStartType');
+        const cur = sel.value;
+
+        if (!cfg || cfg.is5x2) {
+          sel.innerHTML = '<option value="">— нет (5×2 = авто) —</option>';
+          return;
         }
-        #replit-pill .replit-text {
-          font-weight: 500;
-          line-height: 20px;
-          color: #f0f2f6;
+
+        const types = [...new Set(cfg.cycle || [])];
+        const icons = { day:'☀️ День', night:'🌙 Ночь', sleep:'😴 Отсыпной', off:'🟢 Выходной' };
+        let html = '<option value="">— выберите тип —</option>';
+        types.forEach(t => { html += `<option value="${t}">${icons[t]||t}</option>`; });
+        sel.innerHTML = html;
+        if (cur) sel.value = cur;
+      },
+
+      updateCycleInfo() {
+        const el = document.getElementById('cycleInfo');
+        const pos = state.position;
+        const cfg = pos ? POSITIONS[pos] : null;
+        if (!cfg || !state.cycleStartDate || !state.cycleStartType) { 
+          el.style.display = 'none'; 
+          return; 
         }
-        #replit-pill .close-button {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 2px;
-          flex: 0 0 auto;
-          border-radius: 64px;
-          width: 12px;
-          height: 12px;
-          min-width: 0;
-          cursor: pointer;
-          border: none;
-          box-sizing: border-box;
-          background-color: transparent;
-          transition: background-color 0.2s ease;
+        el.style.display = '';
+        el.innerHTML = `<div class="info-box">
+          Цикл: <strong>${(cfg.cycle||['день','выходной']).map(t=>SHIFT_LABEL[t]||t).join(' → ')}</strong><br>
+          Дата начала: <strong>${state.cycleStartDate}</strong>, смена: <strong>${SHIFT_LABEL[state.cycleStartType]||state.cycleStartType}</strong>
+        </div>`;
+      },
+
+      // ─── MODAL LOGIC ────────────────────────────────────────────────────
+      openDayModal(day) {
+        this.editDay = day;
+        const y = state.year, m = state.month;
+        const date = new Date(y, m, day);
+        const dow = DAY_NAMES_LONG[date.getDay()];
+
+        document.getElementById('modalTitle').textContent = `${day} ${MONTH_NAMES_GEN[m]}`;
+        document.getElementById('modalDateInfo').textContent = `${dow}${isWeekend(date) ? ' · выходной день' : ''}`;
+
+        const md = getMonthData(y, m);
+        const ck = cellKey(y, m, day);
+        const cell = md.cells[ck];
+        const autoType = autoShift(state.position, y, m, day);
+        const curType = cell ? cell.type : (state.mode === 'schedule' ? (autoType || 'none') : 'none');
+        const curNote = cell ? (cell.note || '') : '';
+        const curExtraDur = cell ? (cell.extraDur || '12') : '12';
+        const curHours = (cell && cell.hours !== null && cell.hours !== undefined)
+          ? cell.hours
+          : shiftHours(state.position, curType, curExtraDur);
+
+        // Reset shift buttons with ARIA
+        document.querySelectorAll('.shift-btn').forEach(b => {
+          const isActive = b.dataset.type === curType;
+          b.classList.toggle('active', isActive);
+          b.setAttribute('aria-checked', String(isActive));
+        });
+
+        // Extra duration
+        document.querySelectorAll('.extra-dur-btn').forEach(b => {
+          const isActive = b.dataset.edur === curExtraDur;
+          b.classList.toggle('active', isActive);
+          b.setAttribute('aria-checked', String(isActive));
+        });
+        document.getElementById('extraDurSection').style.display = curType === 'extra' ? '' : 'none';
+
+        // Hours
+        const showH = curType !== 'off' && curType !== 'sleep' && curType !== 'none';
+        document.getElementById('hoursSection').style.display = showH ? '' : 'none';
+        document.getElementById('hoursInput').value = showH ? curHours : '';
+        document.getElementById('hoursInput').disabled = !showH;
+
+        document.getElementById('noteInput').value = curNote;
+        document.getElementById('dayModal').classList.remove('hidden');
+        
+        // Фокус на первую кнопку для клавиатурной навигации
+        setTimeout(() => {
+          document.querySelector('.shift-btn.active')?.focus();
+        }, 100);
+      },
+
+      closeModal() {
+        document.getElementById('dayModal').classList.add('hidden');
+        this.editDay = null;
+      },
+
+      saveDay() {
+        if (this.editDay === null) return;
+        const y = state.year, m = state.month, d = this.editDay;
+        const md = getMonthData(y, m);
+        const ck = cellKey(y, m, d);
+
+        const type = document.querySelector('.shift-btn.active')?.dataset.type || 'none';
+        const extraDur = document.querySelector('.extra-dur-btn.active')?.dataset.edur || '12';
+        const note = document.getElementById('noteInput').value.trim();
+        
+        const hoursRaw = parseFloat(document.getElementById('hoursInput').value);
+        const defHours = shiftHours(state.position, type, extraDur);
+        const hours = (isNaN(hoursRaw) || type === 'off' || type === 'sleep' || type === 'none') 
+          ? defHours 
+          : sanitizeNumber(hoursRaw, 0, 24, 0.5) ?? defHours;
+
+        // Если совпадает с авто-значением и нет заметки — удаляем переопределение
+        const autoType = autoShift(state.position, y, m, d);
+        const hoursMatch = Math.abs(hours - defHours) < 0.01;
+        
+        if (type === (autoType || 'none') && hoursMatch && !note && state.mode === 'schedule') {
+          delete md.cells[ck];
+        } else {
+          md.cells[ck] = { 
+            type, 
+            hours: (type === 'off' || type === 'sleep' || type === 'none') ? 0 : hours, 
+            note, 
+            extraDur 
+          };
         }
-        #replit-pill .close-button:hover {
-          background-color: rgba(255, 255, 255, 0.1);
+
+        saveState();
+        this.closeModal();
+        this.renderAll();
+      },
+
+      // ─── SERVICE WORKER ─────────────────────────────────────────────────
+      registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('SW registered:', reg.scope))
+            .catch(err => console.warn('SW registration failed:', err));
         }
-        #replit-pill .close-button:focus-visible {
-          outline: 1px solid #e6e9ef;
-          outline-offset: 1px;
-        }
-        #replit-pill .close-icon {
-          width: 8px;
-          height: 8px;
-          color: #e6e9ef;
-        }
-      </style><div id="replit-pill"><div class="shimmer"></div><div class="badge-content"><svg width="10.67" height="16" viewBox="0 0 50 75" fill="none" class="replit-logo">
-        <path d="M25 19.995C25 20.0375 25 20.0575 25 20.085C25.015 21.34 25.5475 22.6275 26.425 23.525C26.445 23.545 26.4475 23.5475 26.45 23.55C26.485 23.585 26.5025 23.6025 26.54 23.6375C27.4225 24.485 28.6775 25.005 29.9025 25.03C29.9525 25.03 29.9975 25.03 30.0825 25.03H42C44.8 25.03 46.2 25.03 47.27 25.575C48.21 26.055 48.975 26.82 49.455 27.76C50 28.83 50 30.23 50 33.03V42.03C50 44.83 50 46.23 49.455 47.3C48.975 48.24 48.21 49.005 47.27 49.485C46.2 50.03 44.8 50.03 42 50.03H29.9275C28.6425 50.0325 27.3225 50.58 26.4125 51.485C26.4075 51.49 26.4775 51.42 26.45 51.4475C26.445 51.4525 26.4425 51.4525 26.4225 51.475C25.545 52.3725 25.0125 53.6575 24.9975 54.9125C24.9975 54.94 24.9975 54.9625 24.9975 55.0025V67.0575C24.9975 69.8575 24.9975 71.2575 24.4525 72.3275C23.9725 73.2675 23.2075 74.0325 22.2675 74.5125C21.1975 75.0575 19.7975 75.0575 16.9975 75.0575H7.9975C5.1975 75.0575 3.7975 75.0575 2.7275 74.5125C1.7875 74.0325 1.0225 73.2675 0.542498 72.3275C-0.00250244 71.2575 -0.00250244 69.8575 -0.00250244 67.0575V58.0575C-0.00250244 55.2575 -0.00250244 53.8575 0.542498 52.7875C1.0225 51.8475 1.7875 51.0825 2.7275 50.6025C3.7975 50.0575 5.1975 50.0575 7.9975 50.0575H19.7225C19.9 50.0575 19.9875 50.0575 20.08 50.055C21.2475 50.0125 22.4375 49.52 23.295 48.7225C23.3625 48.66 23.4125 48.61 23.5125 48.51C23.55 48.4725 23.5675 48.455 23.6025 48.42C24.455 47.5325 24.9725 46.2825 24.9975 45.0525C24.9975 45.0025 24.9975 44.96 24.9975 44.875V30.12C24.9975 30.0325 24.9975 29.99 24.9975 29.94C24.9725 28.71 24.455 27.46 23.6025 26.575C23.5675 26.54 23.55 26.52 23.5125 26.4825C23.475 26.445 23.4575 26.4275 23.42 26.3925C22.5325 25.54 21.2825 25.0225 20.0525 24.9975C20.0025 24.9975 19.96 24.9975 19.875 24.9975H7.9975C5.1975 24.9975 3.7975 24.9975 2.7275 24.4525C1.7875 23.9725 1.0225 23.2075 0.542498 22.2675C-0.00250244 21.1975 -0.00250244 19.7975 -0.00250244 16.9975V7.9975C-2.44146e-06 5.2 -2.44379e-06 3.8 0.544998 2.73C1.025 1.79 1.79 1.025 2.73 0.545C3.8 0 5.2 0 8 0H17C19.8 0 21.2 0 22.27 0.545C23.21 1.025 23.975 1.79 24.455 2.73C25 3.8 25 5.2 25 8V19.995Z" fill="currentColor"></path>
-      </svg><div class="replit-text">Made with Replit</div></div><button class="close-button" aria-label="Close"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="close-icon">
-        <path d="M18 6 6 18"></path>
-        <path d="m6 6 12 12"></path>
-      </svg></button></div></template></div></body><app-ls-content ng-version="17.3.7"><template shadowrootmode="open"><!----><app-similar-tools _nghost-ng-c2697620354=""><!----><!----><!----></app-similar-tools><!----><!----><style>[_nghost-ng-c2697620354]{font-family:Open Sans,sans-serif;color:#121212}</style></template></app-ls-content></html>
+      }
+    };
+
+    // Инициализация после загрузки DOM
+    document.addEventListener('DOMContentLoaded', () => AppUI.init());
+  </script>
+</body>
+</html>
