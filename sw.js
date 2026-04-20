@@ -1,4 +1,8 @@
-const CACHE_NAME = 'zp-calc-v3';
+/* 
+  VERSION: 3.0 
+  ⚠️ ПРИ КАЖДОМ ОБНОВЛЕНИИ КОДА УВЕЛИЧИВАЙТЕ ЭТУ ВЕРСИЮ (напр. 3.1 → 3.2)
+*/
+const CACHE_NAME = 'zp-calc-v3.0';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -7,16 +11,18 @@ const ASSETS_TO_CACHE = [
   './manifest.json'
 ];
 
-// Установка: кэшируем статику
+// 1. Установка: кэшируем статику
 self.addEventListener('install', (event) => {
+  console.log('[SW] Установка кэша:', CACHE_NAME);
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
   );
   self.skipWaiting();
 });
 
-// Активация: чистим старые кэши
+// 2. Активация: удаляем старые кэши
 self.addEventListener('activate', (event) => {
+  console.log('[SW] Активация:', CACHE_NAME);
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
@@ -27,7 +33,7 @@ self.addEventListener('activate', (event) => {
   clients.claim();
 });
 
-// Стратегия: Cache First + Network fallback
+// 3. Стратегия: Cache First + Network fallback
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
@@ -36,9 +42,7 @@ self.addEventListener('fetch', (event) => {
       const fetchPromise = fetch(event.request).then((networkResponse) => {
         if (networkResponse && networkResponse.ok) {
           const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
         }
         return networkResponse;
       }).catch(() => cachedResponse);

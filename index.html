@@ -9,74 +9,38 @@
   <meta name="apple-mobile-web-app-title" content="График смен">
   <meta name="theme-color" content="#1e293b">
   <meta name="description" content="Учёт рабочих смен и расчёт зарплаты">
-  
   <title>График смен</title>
-  
-  <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json">
-  
-  <!-- Styles -->
   <link rel="stylesheet" href="styles.css">
-  
-  <!-- Preconnect для производительности -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  
-  <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%231e293b'/%3E%3Ctext x='96' y='130' text-anchor='middle' font-size='110' font-family='Apple Color Emoji,Segoe UI Emoji,sans-serif'%3E📅%3C/text%3E%3C/svg%3E">
 </head>
 <body>
-  <!-- Skip link для доступности -->
   <a href="#main-content" class="skip-link">Перейти к основному содержимому</a>
 
   <header class="app-header" role="banner">
-    <div class="app-header-top">
-      <h1 class="app-title">📅 График смен</h1>
-    </div>
+    <div class="app-header-top"><h1 class="app-title">📅 График смен</h1></div>
     <label for="positionSelect" class="sr-only">Выберите должность</label>
     <select class="position-select" id="positionSelect" aria-label="Выбор должности">
       <option value="">— Выберите должность —</option>
-      <option value="РТС">РТС</option>
-      <option value="Прессовщик">Прессовщик</option>
-      <option value="Водитель склад">Водитель склад</option>
-      <option value="Водитель смена">Водитель смена</option>
-      <option value="Разнорабочий">Разнорабочий</option>
-      <option value="Упаковщик">Упаковщик</option>
-      <option value="Диспетчер">Диспетчер</option>
-      <option value="Начальник смены">Начальник смены</option>
-      <option value="Мельник">Мельник</option>
-      <option value="Автоклавщик">Автоклавщик</option>
     </select>
   </header>
 
   <main class="main" id="main-content" role="main">
-
-    <!-- CALENDAR CARD -->
     <section class="card" id="calendarCard" aria-labelledby="calendarTitle">
       <div class="month-nav">
         <button class="month-nav-btn" id="prevMonth" aria-label="Предыдущий месяц">‹</button>
-        <h2 class="month-name" id="monthName" aria-live="polite">Апрель 2026</h2>
+        <h2 class="month-name" id="monthName" aria-live="polite"></h2>
         <button class="month-nav-btn" id="nextMonth" aria-label="Следующий месяц">›</button>
       </div>
-
       <div class="mode-toggle" role="tablist" aria-label="Режим отображения">
         <button class="mode-btn active" id="modeSchedule" data-mode="schedule" role="tab" aria-selected="true">📅 По графику</button>
         <button class="mode-btn" id="modeManual" data-mode="manual" role="tab" aria-selected="false">✏️ Вручную</button>
       </div>
-
       <div class="calendar-wrap">
         <div class="calendar-grid" id="calendarGrid" role="grid" aria-label="Календарь смен">
-          <!-- Заголовки дней недели -->
-          <div class="day-header" role="columnheader">Пн</div>
-          <div class="day-header" role="columnheader">Вт</div>
-          <div class="day-header" role="columnheader">Ср</div>
-          <div class="day-header" role="columnheader">Чт</div>
-          <div class="day-header" role="columnheader">Пт</div>
-          <div class="day-header" role="columnheader">Сб</div>
-          <div class="day-header" role="columnheader">Вс</div>
-          <!-- Ячейки дней генерируются через JS -->
+          <div class="day-header" role="columnheader">Пн</div><div class="day-header" role="columnheader">Вт</div><div class="day-header" role="columnheader">Ср</div><div class="day-header" role="columnheader">Чт</div><div class="day-header" role="columnheader">Пт</div><div class="day-header" role="columnheader">Сб</div><div class="day-header" role="columnheader">Вс</div>
         </div>
       </div>
-
       <div class="legend" aria-label="Легенда смен">
         <div class="legend-item"><div class="legend-dot" style="background:#FDE68A;border:1.5px solid #d97706"></div>День</div>
         <div class="legend-item"><div class="legend-dot" style="background:#93C5FD;border:1.5px solid #1d4ed8"></div>Ночь</div>
@@ -84,692 +48,297 @@
         <div class="legend-item"><div class="legend-dot" style="background:#86EFAC;border:1.5px solid #15803d"></div>Выходной</div>
         <div class="legend-item"><div class="legend-dot" style="background:#F9A8D4;border:1.5px solid #be185d"></div>Доп. смена</div>
       </div>
-
       <div class="settings-toggle-row">
         <button class="toggle-btn" id="settingsToggle" aria-expanded="false" aria-controls="settingsPanel">
-          <span aria-hidden="true">⚙️</span>
-          <span>Настройка графика</span>
-          <i class="chevron" id="settingsChevron" aria-hidden="true">▾</i>
+          <span aria-hidden="true">⚙️</span><span>Настройка графика</span><i class="chevron" id="settingsChevron" aria-hidden="true">▾</i>
         </button>
       </div>
-
       <div class="collapsible" id="settingsPanel" role="region" aria-label="Настройки графика">
         <div class="settings-panel">
           <div id="autoSettingsBlock">
             <label class="field-label" for="cycleStartDate">Дата начала цикла</label>
             <input type="date" class="input-field" id="cycleStartDate" style="margin-bottom:10px">
-            
             <label class="field-label" for="cycleStartType">Тип смены в эту дату</label>
-            <select class="input-field" id="cycleStartType" style="margin-bottom:12px">
-              <option value="">— нет (5×2 = авто) —</option>
-            </select>
-            
+            <select class="input-field" id="cycleStartType" style="margin-bottom:12px"><option value="">— нет (5×2 = авто) —</option></select>
             <button class="btn-primary" id="applyAutoBtn">Применить к графику</button>
             <div id="cycleInfo" style="margin-top:10px; display:none" aria-live="polite"></div>
           </div>
-          
           <div class="divider"></div>
           <button class="btn-danger" id="clearMonthBtn">Очистить ручные правки этого месяца</button>
         </div>
       </div>
     </section>
 
-    <!-- SUMMARY CARD -->
     <section class="card" aria-labelledby="summaryTitle">
-      <div class="card-header">
-        <h2 id="summaryTitle">Итоги месяца</h2>
-        <span class="card-badge" id="summaryBadge" aria-live="polite">График</span>
-      </div>
+      <div class="card-header"><h2 id="summaryTitle">Итоги месяца</h2><span class="card-badge" id="summaryBadge" aria-live="polite">График</span></div>
       <div class="summary-grid" role="list">
-        <div class="summary-item" role="listitem">
-          <div class="summary-value" id="sumWorkDays" aria-label="Количество рабочих дней">0</div>
-          <div class="summary-label">Раб. дней</div>
-        </div>
-        <div class="summary-item" role="listitem">
-          <div class="summary-value" id="sumHours" aria-label="Количество зачтённых часов">0</div>
-          <div class="summary-label">Часов (зачёт)</div>
-        </div>
-        <div class="summary-item" role="listitem">
-          <div class="summary-value" id="sumNights" aria-label="Количество ночных смен">0</div>
-          <div class="summary-label">Ночных</div>
-        </div>
+        <div class="summary-item" role="listitem"><div class="summary-value" id="sumWorkDays" aria-label="Количество рабочих дней">0</div><div class="summary-label">Раб. дней</div></div>
+        <div class="summary-item" role="listitem"><div class="summary-value" id="sumHours" aria-label="Количество зачтённых часов">0</div><div class="summary-label">Часов (зачёт)</div></div>
+        <div class="summary-item" role="listitem"><div class="summary-value" id="sumNights" aria-label="Количество ночных смен">0</div><div class="summary-label">Ночных</div></div>
       </div>
     </section>
 
-    <!-- SALARY CARD -->
     <section class="card" aria-labelledby="salaryTitle">
-      <div class="card-header">
-        <h2 id="salaryTitle">Расчёт зарплаты</h2>
-      </div>
+      <div class="card-header"><h2 id="salaryTitle">Расчёт зарплаты</h2></div>
       <div class="calc-section">
-
         <div id="manualHoursBlock" style="display:none">
           <label class="field-label" for="manualHoursInput">Часов за месяц (без графика)</label>
           <input type="number" class="input-field" id="manualHoursInput" placeholder="Введите часы" min="0" max="400" step="0.5" aria-describedby="manualHoursHelp">
           <span id="manualHoursHelp" class="sr-only">Введите количество часов от 0 до 400</span>
         </div>
-
-        <div class="calc-row" id="hoursCalcRow">
-          <span class="calc-row-label">Часов (зачёт)</span>
-          <span class="calc-row-value" id="calcHoursVal" aria-live="polite">0</span>
-        </div>
-
-        <div class="calc-row">
-          <span class="calc-row-label">Оклад</span>
-          <span class="calc-row-value" id="calcSalaryBase" aria-live="polite">—</span>
-        </div>
-
-        <div class="calc-row">
-          <span class="calc-row-label">Норма часов</span>
-          <span class="calc-row-value">165 ч</span>
-        </div>
-
-        <div>
-          <label class="field-label" for="ktuInput">КТУ (коэффициент трудового участия)</label>
-          <input type="number" class="input-field" id="ktuInput" placeholder="Например: 2.55" min="0" max="10" step="0.01" aria-describedby="ktuHelp">
-          <span id="ktuHelp" class="sr-only">Введите коэффициент от 0 до 10</span>
-        </div>
-
-        <!-- Кнопки экспорта -->
+        <div class="calc-row" id="hoursCalcRow"><span class="calc-row-label">Часов (зачёт)</span><span class="calc-row-value" id="calcHoursVal" aria-live="polite">0</span></div>
+        <div class="calc-row"><span class="calc-row-label">Оклад</span><span class="calc-row-value" id="calcSalaryBase" aria-live="polite">—</span></div>
+        <div class="calc-row"><span class="calc-row-label">Норма часов</span><span class="calc-row-value">165 ч</span></div>
+        <div><label class="field-label" for="ktuInput">КТУ (коэффициент трудового участия)</label><input type="number" class="input-field" id="ktuInput" placeholder="Например: 2.55" min="0" max="10" step="0.01" aria-describedby="ktuHelp"><span id="ktuHelp" class="sr-only">Введите коэффициент от 0 до 10</span></div>
         <div style="display:flex; gap:8px; margin-top:8px">
           <button class="btn-secondary" id="exportCsvBtn" style="flex:1; font-size:13px; padding:10px">📤 CSV</button>
           <button class="btn-secondary" id="backupBtn" style="flex:1; font-size:13px; padding:10px">💾 Бэкап</button>
           <button class="btn-secondary" id="restoreBtn" style="flex:1; font-size:13px; padding:10px">📥 Восст.</button>
         </div>
         <input type="file" id="restoreInput" accept=".json" class="sr-only">
-
       </div>
-
       <div class="salary-card" id="salaryCard" aria-live="polite">
         <div class="salary-label-text" id="salaryLabelText">ВЫБЕРИТЕ ДОЛЖНОСТЬ</div>
         <div class="salary-amount" id="salaryAmount">—</div>
         <div class="salary-formula" id="salaryFormula"></div>
       </div>
     </section>
-
     <div class="bottom-space"></div>
   </main>
 
-  <!-- DAY EDITOR MODAL -->
   <div class="modal-overlay hidden" id="dayModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal">
       <div class="modal-handle" aria-hidden="true"></div>
-      <h3 class="modal-title" id="modalTitle">1 апреля</h3>
-      <div class="modal-date-info" id="modalDateInfo">понедельник</div>
-
+      <h3 class="modal-title" id="modalTitle"></h3>
+      <div class="modal-date-info" id="modalDateInfo"></div>
       <div class="modal-section">
         <div class="modal-section-title" id="shiftTypeLabel">Тип смены</div>
         <div class="shift-grid" id="shiftGrid" role="radiogroup" aria-labelledby="shiftTypeLabel">
-          <button class="shift-btn shift-day" data-type="day" role="radio" aria-checked="false" aria-label="Дневная смена, 11 часов зачёт">
-            <span class="shift-btn-icon" aria-hidden="true">☀️</span>
-            <span class="shift-btn-label">День</span>
-            <span class="shift-btn-hours" id="shiftHintDay"></span>
-          </button>
-          <button class="shift-btn shift-night" data-type="night" role="radio" aria-checked="false" aria-label="Ночная смена, 11 часов зачёт">
-            <span class="shift-btn-icon" aria-hidden="true">🌙</span>
-            <span class="shift-btn-label">Ночь</span>
-            <span class="shift-btn-hours" id="shiftHintNight"></span>
-          </button>
-          <button class="shift-btn shift-sleep" data-type="sleep" role="radio" aria-checked="false" aria-label="Отсыпной день">
-            <span class="shift-btn-icon" aria-hidden="true">😴</span>
-            <span class="shift-btn-label">Отсыпной</span>
-            <span class="shift-btn-hours">0 ч</span>
-          </button>
-          <button class="shift-btn shift-off" data-type="off" role="radio" aria-checked="false" aria-label="Выходной день">
-            <span class="shift-btn-icon" aria-hidden="true">🟢</span>
-            <span class="shift-btn-label">Выходной</span>
-            <span class="shift-btn-hours">0 ч</span>
-          </button>
-          <button class="shift-btn shift-extra" data-type="extra" role="radio" aria-checked="false" aria-label="Дополнительная смена">
-            <span class="shift-btn-icon" aria-hidden="true">⚡</span>
-            <span class="shift-btn-label">Доп. смена</span>
-            <span class="shift-btn-hours">по выбору</span>
-          </button>
-          <button class="shift-btn shift-none" data-type="none" role="radio" aria-checked="false" aria-label="Смена не задана">
-            <span class="shift-btn-icon" aria-hidden="true">—</span>
-            <span class="shift-btn-label">Не задан</span>
-            <span class="shift-btn-hours">0 ч</span>
-          </button>
+          <button class="shift-btn shift-day" data-type="day" role="radio" aria-checked="false" aria-label="Дневная смена"><span class="shift-btn-icon" aria-hidden="true">☀️</span><span class="shift-btn-label">День</span><span class="shift-btn-hours" id="shiftHintDay"></span></button>
+          <button class="shift-btn shift-night" data-type="night" role="radio" aria-checked="false" aria-label="Ночная смена"><span class="shift-btn-icon" aria-hidden="true">🌙</span><span class="shift-btn-label">Ночь</span><span class="shift-btn-hours" id="shiftHintNight"></span></button>
+          <button class="shift-btn shift-sleep" data-type="sleep" role="radio" aria-checked="false" aria-label="Отсыпной"><span class="shift-btn-icon" aria-hidden="true">😴</span><span class="shift-btn-label">Отсыпной</span><span class="shift-btn-hours">0 ч</span></button>
+          <button class="shift-btn shift-off" data-type="off" role="radio" aria-checked="false" aria-label="Выходной"><span class="shift-btn-icon" aria-hidden="true">🟢</span><span class="shift-btn-label">Выходной</span><span class="shift-btn-hours">0 ч</span></button>
+          <button class="shift-btn shift-extra" data-type="extra" role="radio" aria-checked="false" aria-label="Доп. смена"><span class="shift-btn-icon" aria-hidden="true">⚡</span><span class="shift-btn-label">Доп. смена</span><span class="shift-btn-hours">по выбору</span></button>
+          <button class="shift-btn shift-none" data-type="none" role="radio" aria-checked="false" aria-label="Не задан"><span class="shift-btn-icon" aria-hidden="true">—</span><span class="shift-btn-label">Не задан</span><span class="shift-btn-hours">0 ч</span></button>
         </div>
-
         <div id="extraDurSection" style="display:none; margin-top:10px;">
-          <div class="field-label" style="margin-bottom:6px" id="extraDurLabel">Длительность доп. смены</div>
+          <div class="field-label" id="extraDurLabel">Длительность доп. смены</div>
           <div class="extra-dur-row" role="radiogroup" aria-labelledby="extraDurLabel">
             <button class="extra-dur-btn active" data-edur="12" role="radio" aria-checked="true">12 ч → 11 зачёт</button>
             <button class="extra-dur-btn" data-edur="9" role="radio" aria-checked="false">9 ч → 8 зачёт</button>
           </div>
         </div>
       </div>
-
       <div class="modal-section" id="hoursSection">
         <div class="modal-section-title">Фактические часы (зачёт)</div>
         <div class="hours-adjuster">
-          <button class="adj-btn" id="hoursDown" aria-label="Уменьшить на 0.5 часа">−</button>
-          <label for="hoursInput" class="sr-only">Количество часов</label>
+          <button class="adj-btn" id="hoursDown" aria-label="Уменьшить на 0.5">−</button>
           <input class="adj-input" type="number" id="hoursInput" min="0" max="24" step="0.5" aria-describedby="hoursHelp">
-          <button class="adj-btn" id="hoursUp" aria-label="Увеличить на 0.5 часа">+</button>
+          <button class="adj-btn" id="hoursUp" aria-label="Увеличить на 0.5">+</button>
         </div>
-        <div id="hoursHelp" style="font-size:11px; color:var(--text-muted); margin-top:6px">
-          Можно изменить, если работали не полную смену
-        </div>
+        <div id="hoursHelp" style="font-size:11px; color:var(--text-muted); margin-top:6px">Можно изменить, если работали не полную смену</div>
       </div>
-
-      <div class="modal-section">
-        <div class="modal-section-title">
-          <label for="noteInput">Заметка</label>
-        </div>
-        <textarea class="input-field" id="noteInput" placeholder="Заметка к этому дню (необязательно)..." aria-describedby="noteHelp"></textarea>
-        <span id="noteHelp" class="sr-only">Необязательное текстовое примечание</span>
-      </div>
-
-      <div class="modal-actions">
-        <button class="btn-primary" id="saveDayBtn">Сохранить</button>
-        <button class="btn-secondary" id="cancelDayBtn">Отмена</button>
-      </div>
+      <div class="modal-section"><label for="noteInput" class="modal-section-title">Заметка</label><textarea class="input-field" id="noteInput" placeholder="Заметка к этому дню..." aria-describedby="noteHelp"></textarea><span id="noteHelp" class="sr-only">Необязательное примечание</span></div>
+      <div class="modal-actions"><button class="btn-primary" id="saveDayBtn">Сохранить</button><button class="btn-secondary" id="cancelDayBtn">Отмена</button></div>
     </div>
   </div>
 
-  <!-- Скрипты -->
-  <script type="module" src="app.js"></script>
-  <script>
-    // ─── UI-СЛОЙ (интеграция с app.js) ─────────────────────────────────────
+  <script type="module">
     import {
-      state, loadState, saveState, getMonthData, cellKey,
-      autoShift, effectiveShift, shiftHours, monthStats,
-      sanitizeNumber, calculateSalary, formatRubles,
-      exportMonthToCSV, downloadFile, exportBackup, importBackup,
-      debounce
+      state, POSITIONS, SHIFT_LABEL, SHIFT_CLASS, MONTH_NAMES, MONTH_NAMES_GEN, DAY_NAMES_LONG,
+      loadState, saveState, getMonthData, cellKey, autoShift, shiftHours, monthStats,
+      sanitizeNumber, calculateSalary, formatRubles, isWeekend,
+      exportMonthToCSV, downloadFile, exportBackup, importBackup, debounce
     } from './app.js';
 
-    // ─── ГЛОБАЛЬНЫЕ ФУНКЦИИ ДЛЯ HTML (через onclick) ───────────────────────
-    window.openModal = function(day) {
-      AppUI.openDayModal(day);
-    };
-
-    // ─── UI CONTROLLER ─────────────────────────────────────────────────────
     const AppUI = {
       editDay: null,
-
       init() {
-        this.populatePositionSelect();
+        this.populatePositions();
         loadState();
         this.restoreFormValues();
         this.bindEvents();
         this.renderAll();
-        this.registerServiceWorker();
+        this.registerSW();
       },
-
-      populatePositionSelect() {
+      populatePositions() {
         const sel = document.getElementById('positionSelect');
         Object.keys(POSITIONS).forEach(name => {
           const opt = document.createElement('option');
           opt.value = name; opt.textContent = name;
           sel.appendChild(opt);
         });
+        if (state.position) sel.value = state.position;
       },
-
       bindEvents() {
-        // Выбор должности
-        document.getElementById('positionSelect').addEventListener('change', (e) => {
-          state.position = e.target.value;
-          saveState();
-          this.renderAll();
-        });
-
-        // Навигация по месяцам
-        document.getElementById('prevMonth').addEventListener('click', () => {
-          if (state.month === 0) { state.month = 11; state.year--; } 
-          else state.month--;
-          this.renderAll();
-        });
-        document.getElementById('nextMonth').addEventListener('click', () => {
-          if (state.month === 11) { state.month = 0; state.year++; } 
-          else state.month++;
-          this.renderAll();
-        });
-
-        // Переключение режима
-        document.getElementById('modeSchedule').addEventListener('click', () => {
-          state.mode = 'schedule'; saveState(); this.renderAll();
-        });
-        document.getElementById('modeManual').addEventListener('click', () => {
-          state.mode = 'manual'; saveState(); this.renderAll();
-        });
-
-        // Настройки
+        document.getElementById('positionSelect').addEventListener('change', e => { state.position = e.target.value; saveState(); this.renderAll(); });
+        document.getElementById('prevMonth').addEventListener('click', () => { if(state.month===0){state.month=11;state.year--;} else state.month--; this.renderAll(); });
+        document.getElementById('nextMonth').addEventListener('click', () => { if(state.month===11){state.month=0;state.year++;} else state.month++; this.renderAll(); });
+        document.getElementById('modeSchedule').addEventListener('click', () => { state.mode='schedule'; saveState(); this.renderAll(); });
+        document.getElementById('modeManual').addEventListener('click', () => { state.mode='manual'; saveState(); this.renderAll(); });
         document.getElementById('settingsToggle').addEventListener('click', () => {
-          const panel = document.getElementById('settingsPanel');
-          const btn = document.getElementById('settingsToggle');
-          const chevron = document.getElementById('settingsChevron');
-          const isOpen = panel.classList.contains('open');
-          panel.classList.toggle('open', !isOpen);
-          chevron.classList.toggle('open', !isOpen);
-          btn.setAttribute('aria-expanded', String(!isOpen));
+          const p=document.getElementById('settingsPanel'), b=document.getElementById('settingsToggle'), c=document.getElementById('settingsChevron');
+          const isOpen=p.classList.contains('open');
+          p.classList.toggle('open',!isOpen); c.classList.toggle('open',!isOpen); b.setAttribute('aria-expanded',String(!isOpen));
         });
-
         document.getElementById('applyAutoBtn').addEventListener('click', () => {
-          const sd = document.getElementById('cycleStartDate').value;
-          const st = document.getElementById('cycleStartType').value;
-          const cfg = POSITIONS[state.position];
-          
-          if (!sd || (!st && !cfg?.is5x2)) {
-            alert('Выберите дату и тип смены'); return;
-          }
-          state.cycleStartDate = sd;
-          state.cycleStartType = st;
-          saveState();
-          this.updateCycleInfo();
-          this.renderAll();
-          this.closeSettings();
+          const sd=document.getElementById('cycleStartDate').value, st=document.getElementById('cycleStartType').value;
+          if(!sd || (!st && !POSITIONS[state.position]?.is5x2)) { alert('Выберите дату и тип смены'); return; }
+          state.cycleStartDate=sd; state.cycleStartType=st; saveState(); this.updateCycleInfo(); this.renderAll(); this.closeSettings();
         });
-
         document.getElementById('clearMonthBtn').addEventListener('click', () => {
-          if (!confirm('Очистить все ручные правки этого месяца?')) return;
-          const md = getMonthData(state.year, state.month);
-          md.cells = {};
-          saveState();
-          this.renderAll();
+          if(!confirm('Очистить все ручные правки этого месяца?')) return;
+          getMonthData(state.year, state.month).cells={}; saveState(); this.renderAll();
         });
-
-        // Поля ввода с валидацией и debounce
-        const debouncedRender = debounce(() => {
-          this.renderSalary();
-          this.renderSummary();
-        }, 150);
-
-        document.getElementById('ktuInput').addEventListener('input', function() {
-          const v = sanitizeNumber(this.value, 0, 10, 0.01);
-          getMonthData(state.year, state.month).ktu = v;
-          saveState();
-          debouncedRender();
-        });
-
-        document.getElementById('manualHoursInput').addEventListener('input', function() {
-          const v = sanitizeNumber(this.value, 0, 400, 0.5);
-          getMonthData(state.year, state.month).manualHours = v;
-          saveState();
-          debouncedRender();
-        });
-
-        document.getElementById('cycleStartDate').addEventListener('change', (e) => {
-          state.cycleStartDate = e.target.value;
-        });
-        document.getElementById('cycleStartType').addEventListener('change', (e) => {
-          state.cycleStartType = e.target.value;
-        });
-
-        // Кнопки экспорта/импорта
-        document.getElementById('exportCsvBtn').addEventListener('click', () => {
-          if (!state.position) { alert('Выберите должность'); return; }
-          const csv = exportMonthToCSV(state.year, state.month, state.position);
-          const fname = `график-${state.position}-${state.year}-${String(state.month+1).padStart(2,'0')}.csv`;
-          downloadFile(csv, fname, 'text/csv');
-        });
-
+        const debouncedRender = debounce(() => { this.renderSalary(); this.renderSummary(); }, 150);
+        document.getElementById('ktuInput').addEventListener('input', function() { getMonthData(state.year,state.month).ktu=sanitizeNumber(this.value,0,10,0.01); saveState(); debouncedRender(); });
+        document.getElementById('manualHoursInput').addEventListener('input', function() { getMonthData(state.year,state.month).manualHours=sanitizeNumber(this.value,0,400,0.5); saveState(); debouncedRender(); });
+        document.getElementById('cycleStartDate').addEventListener('change', e => state.cycleStartDate=e.target.value);
+        document.getElementById('cycleStartType').addEventListener('change', e => state.cycleStartType=e.target.value);
+        document.getElementById('exportCsvBtn').addEventListener('click', () => { if(!state.position) return alert('Выберите должность'); const csv=exportMonthToCSV(state.year,state.month,state.position); downloadFile(csv,`график-${state.position}-${state.year}-${String(state.month+1).padStart(2,'0')}.csv`,'text/csv'); });
         document.getElementById('backupBtn').addEventListener('click', exportBackup);
-
-        document.getElementById('restoreBtn').addEventListener('click', () => {
-          document.getElementById('restoreInput').click();
+        document.getElementById('restoreBtn').addEventListener('click', () => document.getElementById('restoreInput').click());
+        document.getElementById('restoreInput').addEventListener('change', e => {
+          const f=e.target.files[0]; if(!f) return;
+          const r=new FileReader(); r.onload=evt => { const res=importBackup(evt.target.result); if(res.success){alert('✅ Данные восстановлены'); this.renderAll();} else alert('❌ '+res.error); e.target.value=''; }; r.readAsText(f);
         });
-        document.getElementById('restoreInput').addEventListener('change', (e) => {
-          const file = e.target.files[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = (evt) => {
-            const result = importBackup(evt.target.result);
-            if (result.success) {
-              alert('✅ Данные восстановлены');
-              this.renderAll();
-            } else {
-              alert('❌ Ошибка: ' + result.error);
-            }
-            e.target.value = ''; // сброс
-          };
-          reader.readAsText(file);
-        });
-
-        // Модальное окно
         document.getElementById('saveDayBtn').addEventListener('click', () => this.saveDay());
         document.getElementById('cancelDayBtn').addEventListener('click', () => this.closeModal());
-        document.getElementById('dayModal').addEventListener('click', (e) => {
-          if (e.target === document.getElementById('dayModal')) this.closeModal();
-        });
-
-        // Кнопки смен в модалке
+        document.getElementById('dayModal').addEventListener('click', e => { if(e.target===document.getElementById('dayModal')) this.closeModal(); });
         document.querySelectorAll('.shift-btn').forEach(btn => {
           btn.addEventListener('click', function() {
-            document.querySelectorAll('.shift-btn').forEach(b => {
-              b.classList.remove('active');
-              b.setAttribute('aria-checked', 'false');
-            });
-            this.classList.add('active');
-            this.setAttribute('aria-checked', 'true');
-            
-            const type = this.dataset.type;
-            const showH = type !== 'off' && type !== 'sleep' && type !== 'none';
-            document.getElementById('hoursSection').style.display = showH ? '' : 'none';
-            document.getElementById('extraDurSection').style.display = type === 'extra' ? '' : 'none';
-            
-            if (showH) {
-              const dur = document.querySelector('.extra-dur-btn.active')?.dataset.edur || '12';
+            document.querySelectorAll('.shift-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-checked','false'); });
+            this.classList.add('active'); this.setAttribute('aria-checked','true');
+            const type=this.dataset.type;
+            document.getElementById('hoursSection').style.display = (type!=='off'&&type!=='sleep'&&type!=='none') ? '' : 'none';
+            document.getElementById('extraDurSection').style.display = type==='extra' ? '' : 'none';
+            if(type!=='off'&&type!=='sleep'&&type!=='none') {
+              const dur=document.querySelector('.extra-dur-btn.active')?.dataset.edur||'12';
               document.getElementById('hoursInput').value = shiftHours(state.position, type, dur);
             }
           });
         });
-
-        // Длительность доп. смены
         document.querySelectorAll('.extra-dur-btn').forEach(btn => {
           btn.addEventListener('click', function() {
-            document.querySelectorAll('.extra-dur-btn').forEach(b => {
-              b.classList.remove('active');
-              b.setAttribute('aria-checked', 'false');
-            });
-            this.classList.add('active');
-            this.setAttribute('aria-checked', 'true');
-            document.getElementById('hoursInput').value = this.dataset.edur === '9' ? 8 : 11;
+            document.querySelectorAll('.extra-dur-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-checked','false'); });
+            this.classList.add('active'); this.setAttribute('aria-checked','true');
+            document.getElementById('hoursInput').value = this.dataset.edur==='9' ? 8 : 11;
           });
         });
-
-        // Регулировка часов
-        document.getElementById('hoursDown').addEventListener('click', () => {
-          const inp = document.getElementById('hoursInput');
-          const val = sanitizeNumber(inp.value, 0, 24, 0.5);
-          inp.value = val !== null ? Math.max(0, val - 0.5) : 0;
-        });
-        document.getElementById('hoursUp').addEventListener('click', () => {
-          const inp = document.getElementById('hoursInput');
-          const val = sanitizeNumber(inp.value, 0, 24, 0.5);
-          inp.value = val !== null ? Math.min(24, val + 0.5) : 0;
-        });
+        document.getElementById('hoursDown').addEventListener('click', () => { const i=document.getElementById('hoursInput'), v=sanitizeNumber(i.value,0,24,0.5); i.value = v!==null ? Math.max(0,v-0.5) : 0; });
+        document.getElementById('hoursUp').addEventListener('click', () => { const i=document.getElementById('hoursInput'), v=sanitizeNumber(i.value,0,24,0.5); i.value = v!==null ? Math.min(24,v+0.5) : 0; });
       },
-
-      closeSettings() {
-        const panel = document.getElementById('settingsPanel');
-        const btn = document.getElementById('settingsToggle');
-        const chevron = document.getElementById('settingsChevron');
-        panel.classList.remove('open');
-        chevron.classList.remove('open');
-        btn.setAttribute('aria-expanded', 'false');
-      },
-
-      // ─── RENDER ─────────────────────────────────────────────────────────
-      renderAll() {
-        this.renderMonthHeader();
-        this.renderCalendar();
-        this.renderSummary();
-        this.renderSalary();
-        this.restoreFormValues();
-        this.updateShiftHints();
-        this.updateCycleTypeOptions();
-        this.updateCycleInfo();
-      },
-
-      renderMonthHeader() {
-        document.getElementById('monthName').textContent = `${MONTH_NAMES[state.month]} ${state.year}`;
-      },
-
+      closeSettings() { const p=document.getElementById('settingsPanel'), b=document.getElementById('settingsToggle'), c=document.getElementById('settingsChevron'); p.classList.remove('open'); c.classList.remove('open'); b.setAttribute('aria-expanded','false'); },
+      renderAll() { this.renderMonthHeader(); this.renderCalendar(); this.renderSummary(); this.renderSalary(); this.restoreFormValues(); this.updateShiftHints(); this.updateCycleTypeOptions(); this.updateCycleInfo(); },
+      renderMonthHeader() { document.getElementById('monthName').textContent = `${MONTH_NAMES[state.month]} ${state.year}`; },
       renderCalendar() {
-        const grid = document.getElementById('calendarGrid');
-        const y = state.year, m = state.month;
-        const today = new Date();
-        const daysInMonth = new Date(y, m + 1, 0).getDate();
-        const md = getMonthData(y, m);
-
-        let html = DAY_NAMES_HEADER.map(n => `<div class="day-header" role="columnheader">${n}</div>`).join('');
-
-        const firstDow = new Date(y, m, 1).getDay();
-        const offset = firstDow === 0 ? 6 : firstDow - 1;
-        for (let i = 0; i < offset; i++) html += '<div class="day-cell empty" tabindex="-1"></div>';
-
-        for (let d = 1; d <= daysInMonth; d++) {
-          const ck = cellKey(y, m, d);
-          const isToday = today.getFullYear() === y && today.getMonth() === m && today.getDate() === d;
-          const cellData = md.cells[ck];
-          const isManualOverride = !!cellData;
-
-          let type = 'none';
-          if (cellData) { type = cellData.type; }
-          else if (state.mode === 'schedule' && state.position) { 
-            type = autoShift(state.position, y, m, d) || 'none'; 
-          }
-
-          const hasNote = cellData && cellData.note && cellData.note.trim();
-          const shClass = SHIFT_CLASS[type] || 'shift-none';
-          const lbl = SHIFT_LABEL[type] || '';
-          const todayCls = isToday ? ' today' : '';
-          const noteMark = hasNote ? '<span class="day-note-mark" aria-label="Есть заметка">✱</span>' : '';
-          
-          // ARIA для доступности
-          const ariaLabel = `${d} ${MONTH_NAMES_GEN[m]}: ${lbl || 'не задано'}${hasNote ? ', есть заметка' : ''}`;
-
-          html += `<div class="day-cell ${shClass}${todayCls}" 
-                      onclick="openModal(${d})" 
-                      role="gridcell"
-                      tabindex="0"
-                      aria-label="${ariaLabel}">
-            ${noteMark}
-            <div class="day-num">${d}</div>
-            <div class="day-label">${lbl}</div>
-          </div>`;
+        const grid=document.getElementById('calendarGrid'), y=state.year, m=state.month, today=new Date();
+        const daysInMonth=new Date(y,m+1,0).getDate(), md=getMonthData(y,m);
+        let html=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(n=>`<div class="day-header" role="columnheader">${n}</div>`).join('');
+        const firstDow=new Date(y,m,1).getDay(), offset=firstDow===0?6:firstDow-1;
+        for(let i=0;i<offset;i++) html+='<div class="day-cell empty" tabindex="-1"></div>';
+        for(let d=1;d<=daysInMonth;d++) {
+          const ck=cellKey(y,m,d), isToday=today.getFullYear()===y && today.getMonth()===m && today.getDate()===d;
+          const cellData=md.cells[ck];
+          let type='none';
+          if(cellData) type=cellData.type; else if(state.mode==='schedule'&&state.position) type=autoShift(state.position,y,m,d)||'none';
+          const hasNote=cellData?.note?.trim();
+          const shClass=SHIFT_CLASS[type]||'shift-none', lbl=SHIFT_LABEL[type]||'';
+          const todayCls=isToday?' today':'';
+          const noteMark=hasNote?'<span class="day-note-mark" aria-label="Есть заметка">✱</span>':'';
+          html+=`<div class="day-cell ${shClass}${todayCls}" onclick="AppUI.openDayModal(${d})" role="gridcell" tabindex="0" aria-label="${d} ${MONTH_NAMES_GEN[m]}: ${lbl||'не задано'}${hasNote?', есть заметка':''}">${noteMark}<div class="day-num">${d}</div><div class="day-label">${lbl}</div></div>`;
         }
-
-        grid.innerHTML = html;
+        grid.innerHTML=html;
       },
-
       renderSummary() {
-        const stats = monthStats(state.position, state.year, state.month);
-        document.getElementById('sumWorkDays').textContent = stats.workDays;
-        document.getElementById('sumHours').textContent = stats.hours;
-        document.getElementById('sumNights').textContent = stats.nights;
-        document.getElementById('summaryBadge').textContent = state.mode === 'schedule' ? 'График' : 'Вручную';
-        
-        const hours = state.mode === 'manual'
-          ? (getMonthData(state.year, state.month).manualHours || 0)
-          : stats.hours;
-        document.getElementById('calcHoursVal').textContent = hours;
+        const stats=monthStats(state.position,state.year,state.month);
+        document.getElementById('sumWorkDays').textContent=stats.workDays;
+        document.getElementById('sumHours').textContent=stats.hours;
+        document.getElementById('sumNights').textContent=stats.nights;
+        document.getElementById('summaryBadge').textContent=state.mode==='schedule'?'График':'Вручную';
+        const hours=state.mode==='manual'?(getMonthData(state.year,state.month).manualHours||0):stats.hours;
+        document.getElementById('calcHoursVal').textContent=hours;
       },
-
       renderSalary() {
-        const pos = state.position;
-        const cfg = pos ? POSITIONS[pos] : null;
-        const salary = cfg ? cfg.salary : null;
-        
-        document.getElementById('calcSalaryBase').textContent = salary ? formatRubles(salary) : '—';
-
-        const md = getMonthData(state.year, state.month);
-        const ktu = md.ktu;
-
-        let hours;
-        if (state.mode === 'manual') {
-          hours = md.manualHours || 0;
-        } else {
-          hours = monthStats(pos, state.year, state.month).hours;
-        }
-
-        if (!salary || !hours) {
-          document.getElementById('salaryAmount').textContent = '—';
-          document.getElementById('salaryLabelText').textContent = salary ? 'ЗАПОЛНИТЕ ЧАСЫ' : 'ВЫБЕРИТЕ ДОЛЖНОСТЬ';
-          document.getElementById('salaryFormula').textContent = '';
-          return;
-        }
-
-        const k = ktu || 1;
-        const result = calculateSalary({ baseSalary: salary, hours, ktu: k });
-        
-        document.getElementById('salaryAmount').textContent = result ? formatRubles(result) : '—';
-        document.getElementById('salaryLabelText').textContent = ktu ? `ЗАРПЛАТА (КТУ = ${ktu})` : 'ЗАРПЛАТА (КТУ = 1)';
-        document.getElementById('salaryFormula').textContent = `${formatRubles(salary)} × ${k} ÷ ${NORM_HOURS} × ${hours} ч`;
+        const cfg=state.position?POSITIONS[state.position]:null, salary=cfg?cfg.salary:null;
+        document.getElementById('calcSalaryBase').textContent=salary?formatRubles(salary):'—';
+        const md=getMonthData(state.year,state.month), ktu=md.ktu;
+        let hours=state.mode==='manual'?(md.manualHours||0):monthStats(state.position,state.year,state.month).hours;
+        if(!salary||!hours) { document.getElementById('salaryAmount').textContent='—'; document.getElementById('salaryLabelText').textContent=salary?'ЗАПОЛНИТЕ ЧАСЫ':'ВЫБЕРИТЕ ДОЛЖНОСТЬ'; document.getElementById('salaryFormula').textContent=''; return; }
+        const k=ktu||1, result=calculateSalary({baseSalary:salary,hours,ktu:k});
+        document.getElementById('salaryAmount').textContent=result?formatRubles(result):'—';
+        document.getElementById('salaryLabelText').textContent=ktu?`ЗАРПЛАТА (КТУ = ${ktu})`:'ЗАРПЛАТА (КТУ = 1)';
+        document.getElementById('salaryFormula').textContent=`${formatRubles(salary)} × ${k} ÷ 165 × ${hours} ч`;
       },
-
       restoreFormValues() {
-        const md = getMonthData(state.year, state.month);
-        document.getElementById('ktuInput').value = md.ktu !== null ? md.ktu : '';
-        document.getElementById('manualHoursInput').value = md.manualHours !== null ? md.manualHours : '';
-        document.getElementById('cycleStartDate').value = state.cycleStartDate || '';
-        document.getElementById('cycleStartType').value = state.cycleStartType || '';
-
-        const manualBlock = document.getElementById('manualHoursBlock');
-        const hoursCalcRow = document.getElementById('hoursCalcRow');
-        if (state.mode === 'manual') {
-          manualBlock.style.display = '';
-          hoursCalcRow.style.display = 'none';
-        } else {
-          manualBlock.style.display = 'none';
-          hoursCalcRow.style.display = '';
-        }
-
-        document.getElementById('modeSchedule').classList.toggle('active', state.mode === 'schedule');
-        document.getElementById('modeSchedule').setAttribute('aria-selected', state.mode === 'schedule');
-        document.getElementById('modeManual').classList.toggle('active', state.mode === 'manual');
-        document.getElementById('modeManual').setAttribute('aria-selected', state.mode === 'manual');
+        const md=getMonthData(state.year,state.month);
+        document.getElementById('ktuInput').value=md.ktu!==null?md.ktu:'';
+        document.getElementById('manualHoursInput').value=md.manualHours!==null?md.manualHours:'';
+        document.getElementById('cycleStartDate').value=state.cycleStartDate||'';
+        document.getElementById('cycleStartType').value=state.cycleStartType||'';
+        document.getElementById('manualHoursBlock').style.display=state.mode==='manual'?'':'none';
+        document.getElementById('hoursCalcRow').style.display=state.mode==='manual'?'none':'';
+        document.getElementById('modeSchedule').classList.toggle('active',state.mode==='schedule');
+        document.getElementById('modeManual').classList.toggle('active',state.mode==='manual');
       },
-
       updateShiftHints() {
-        const pos = state.position;
-        const cfg = pos ? POSITIONS[pos] : null;
-        if (cfg) {
-          document.getElementById('shiftHintDay').textContent = cfg.hoursPerShift + ' ч зачёт';
-          document.getElementById('shiftHintNight').textContent = cfg.hoursPerShift + ' ч зачёт';
-        }
+        const cfg=state.position?POSITIONS[state.position]:null;
+        if(cfg) { document.getElementById('shiftHintDay').textContent=cfg.hoursPerShift+' ч зачёт'; document.getElementById('shiftHintNight').textContent=cfg.hoursPerShift+' ч зачёт'; }
       },
-
       updateCycleTypeOptions() {
-        const pos = state.position;
-        const cfg = pos ? POSITIONS[pos] : null;
-        const sel = document.getElementById('cycleStartType');
-        const cur = sel.value;
-
-        if (!cfg || cfg.is5x2) {
-          sel.innerHTML = '<option value="">— нет (5×2 = авто) —</option>';
-          return;
-        }
-
-        const types = [...new Set(cfg.cycle || [])];
-        const icons = { day:'☀️ День', night:'🌙 Ночь', sleep:'😴 Отсыпной', off:'🟢 Выходной' };
-        let html = '<option value="">— выберите тип —</option>';
-        types.forEach(t => { html += `<option value="${t}">${icons[t]||t}</option>`; });
-        sel.innerHTML = html;
-        if (cur) sel.value = cur;
+        const cfg=state.position?POSITIONS[state.position]:null, sel=document.getElementById('cycleStartType'), cur=sel.value;
+        if(!cfg||cfg.is5x2) { sel.innerHTML='<option value="">— нет (5×2 = авто) —</option>'; return; }
+        const types=[...new Set(cfg.cycle||[])], icons={day:'☀️ День',night:'🌙 Ночь',sleep:'😴 Отсыпной',off:'🟢 Выходной'};
+        let html='<option value="">— выберите тип —</option>';
+        types.forEach(t=>{ html+=`<option value="${t}">${icons[t]||t}</option>`; });
+        sel.innerHTML=html; if(cur) sel.value=cur;
       },
-
       updateCycleInfo() {
-        const el = document.getElementById('cycleInfo');
-        const pos = state.position;
-        const cfg = pos ? POSITIONS[pos] : null;
-        if (!cfg || !state.cycleStartDate || !state.cycleStartType) { 
-          el.style.display = 'none'; 
-          return; 
-        }
-        el.style.display = '';
-        el.innerHTML = `<div class="info-box">
-          Цикл: <strong>${(cfg.cycle||['день','выходной']).map(t=>SHIFT_LABEL[t]||t).join(' → ')}</strong><br>
-          Дата начала: <strong>${state.cycleStartDate}</strong>, смена: <strong>${SHIFT_LABEL[state.cycleStartType]||state.cycleStartType}</strong>
-        </div>`;
+        const el=document.getElementById('cycleInfo'), cfg=state.position?POSITIONS[state.position]:null;
+        if(!cfg||!state.cycleStartDate||!state.cycleStartType) { el.style.display='none'; return; }
+        el.style.display='';
+        el.innerHTML=`<div class="info-box">Цикл: <strong>${(cfg.cycle||[]).map(t=>SHIFT_LABEL[t]||t).join(' → ')}</strong><br>Дата начала: <strong>${state.cycleStartDate}</strong>, смена: <strong>${SHIFT_LABEL[state.cycleStartType]||state.cycleStartType}</strong></div>`;
       },
-
-      // ─── MODAL LOGIC ────────────────────────────────────────────────────
       openDayModal(day) {
-        this.editDay = day;
-        const y = state.year, m = state.month;
-        const date = new Date(y, m, day);
-        const dow = DAY_NAMES_LONG[date.getDay()];
-
-        document.getElementById('modalTitle').textContent = `${day} ${MONTH_NAMES_GEN[m]}`;
-        document.getElementById('modalDateInfo').textContent = `${dow}${isWeekend(date) ? ' · выходной день' : ''}`;
-
-        const md = getMonthData(y, m);
-        const ck = cellKey(y, m, day);
-        const cell = md.cells[ck];
-        const autoType = autoShift(state.position, y, m, day);
-        const curType = cell ? cell.type : (state.mode === 'schedule' ? (autoType || 'none') : 'none');
-        const curNote = cell ? (cell.note || '') : '';
-        const curExtraDur = cell ? (cell.extraDur || '12') : '12';
-        const curHours = (cell && cell.hours !== null && cell.hours !== undefined)
-          ? cell.hours
-          : shiftHours(state.position, curType, curExtraDur);
-
-        // Reset shift buttons with ARIA
-        document.querySelectorAll('.shift-btn').forEach(b => {
-          const isActive = b.dataset.type === curType;
-          b.classList.toggle('active', isActive);
-          b.setAttribute('aria-checked', String(isActive));
-        });
-
-        // Extra duration
-        document.querySelectorAll('.extra-dur-btn').forEach(b => {
-          const isActive = b.dataset.edur === curExtraDur;
-          b.classList.toggle('active', isActive);
-          b.setAttribute('aria-checked', String(isActive));
-        });
-        document.getElementById('extraDurSection').style.display = curType === 'extra' ? '' : 'none';
-
-        // Hours
-        const showH = curType !== 'off' && curType !== 'sleep' && curType !== 'none';
-        document.getElementById('hoursSection').style.display = showH ? '' : 'none';
-        document.getElementById('hoursInput').value = showH ? curHours : '';
-        document.getElementById('hoursInput').disabled = !showH;
-
-        document.getElementById('noteInput').value = curNote;
+        this.editDay=day;
+        const y=state.year, m=state.month, date=new Date(y,m,day), dow=DAY_NAMES_LONG[date.getDay()];
+        document.getElementById('modalTitle').textContent=`${day} ${MONTH_NAMES_GEN[m]}`;
+        document.getElementById('modalDateInfo').textContent=`${dow}${isWeekend(date)?' · выходной':''}`;
+        const md=getMonthData(y,m), ck=cellKey(y,m,day), cell=md.cells[ck];
+        const autoType=autoShift(state.position,y,m,day);
+        const curType=cell?cell.type:(state.mode==='schedule'?(autoType||'none'):'none');
+        const curNote=cell?(cell.note||''):'', curExtraDur=cell?(cell.extraDur||'12'):'12';
+        const curHours=(cell&&cell.hours!==null&&cell.hours!==undefined)?cell.hours:shiftHours(state.position,curType,curExtraDur);
+        document.querySelectorAll('.shift-btn').forEach(b => { const a=b.dataset.type===curType; b.classList.toggle('active',a); b.setAttribute('aria-checked',String(a)); });
+        document.querySelectorAll('.extra-dur-btn').forEach(b => { const a=b.dataset.edur===curExtraDur; b.classList.toggle('active',a); b.setAttribute('aria-checked',String(a)); });
+        document.getElementById('extraDurSection').style.display=curType==='extra'?'':'none';
+        const showH=curType!=='off'&&curType!=='sleep'&&curType!=='none';
+        document.getElementById('hoursSection').style.display=showH?'':'none';
+        document.getElementById('hoursInput').value=showH?curHours:'';
+        document.getElementById('hoursInput').disabled=!showH;
+        document.getElementById('noteInput').value=curNote;
         document.getElementById('dayModal').classList.remove('hidden');
-        
-        // Фокус на первую кнопку для клавиатурной навигации
-        setTimeout(() => {
-          document.querySelector('.shift-btn.active')?.focus();
-        }, 100);
+        setTimeout(()=>document.querySelector('.shift-btn.active')?.focus(),100);
       },
-
-      closeModal() {
-        document.getElementById('dayModal').classList.add('hidden');
-        this.editDay = null;
-      },
-
+      closeModal() { document.getElementById('dayModal').classList.add('hidden'); this.editDay=null; },
       saveDay() {
-        if (this.editDay === null) return;
-        const y = state.year, m = state.month, d = this.editDay;
-        const md = getMonthData(y, m);
-        const ck = cellKey(y, m, d);
-
-        const type = document.querySelector('.shift-btn.active')?.dataset.type || 'none';
-        const extraDur = document.querySelector('.extra-dur-btn.active')?.dataset.edur || '12';
-        const note = document.getElementById('noteInput').value.trim();
-        
-        const hoursRaw = parseFloat(document.getElementById('hoursInput').value);
-        const defHours = shiftHours(state.position, type, extraDur);
-        const hours = (isNaN(hoursRaw) || type === 'off' || type === 'sleep' || type === 'none') 
-          ? defHours 
-          : sanitizeNumber(hoursRaw, 0, 24, 0.5) ?? defHours;
-
-        // Если совпадает с авто-значением и нет заметки — удаляем переопределение
-        const autoType = autoShift(state.position, y, m, d);
-        const hoursMatch = Math.abs(hours - defHours) < 0.01;
-        
-        if (type === (autoType || 'none') && hoursMatch && !note && state.mode === 'schedule') {
-          delete md.cells[ck];
-        } else {
-          md.cells[ck] = { 
-            type, 
-            hours: (type === 'off' || type === 'sleep' || type === 'none') ? 0 : hours, 
-            note, 
-            extraDur 
-          };
-        }
-
-        saveState();
-        this.closeModal();
-        this.renderAll();
+        if(this.editDay===null) return;
+        const y=state.year, m=state.month, d=this.editDay, md=getMonthData(y,m), ck=cellKey(y,m,d);
+        const type=document.querySelector('.shift-btn.active')?.dataset.type||'none';
+        const extraDur=document.querySelector('.extra-dur-btn.active')?.dataset.edur||'12';
+        const note=document.getElementById('noteInput').value.trim();
+        const hoursRaw=parseFloat(document.getElementById('hoursInput').value), defHours=shiftHours(state.position,type,extraDur);
+        const hours=(isNaN(hoursRaw)||type==='off'||type==='sleep'||type==='none')?defHours:(sanitizeNumber(hoursRaw,0,24,0.5)??defHours);
+        const autoType=autoShift(state.position,y,m,d), hoursMatch=Math.abs(hours-defHours)<0.01;
+        if(type===(autoType||'none') && hoursMatch && !note && state.mode==='schedule') delete md.cells[ck];
+        else md.cells[ck]={type, hours:(type==='off'||type==='sleep'||type==='none')?0:hours, note, extraDur};
+        saveState(); this.closeModal(); this.renderAll();
       },
-
-      // ─── SERVICE WORKER ─────────────────────────────────────────────────
-      registerServiceWorker() {
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('SW registered:', reg.scope))
-            .catch(err => console.warn('SW registration failed:', err));
-        }
-      }
+      registerSW() { if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(console.warn); }
     };
 
-    // Инициализация после загрузки DOM
+    // Делаем доступным глобально для onclick в HTML
+    window.AppUI = AppUI;
     document.addEventListener('DOMContentLoaded', () => AppUI.init());
   </script>
 </body>
