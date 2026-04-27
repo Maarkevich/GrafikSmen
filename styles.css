@@ -31,7 +31,17 @@ body {
 .app-header { background: var(--primary); color: white; padding: 16px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
 .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .app-title { font-size: 17px; font-weight: 700; }
+
+/* Обёртка для кнопок в хедере */
+.header-actions { display: flex; align-items: center; gap: 8px; }
+
 .theme-btn { background: rgba(255,255,255,0.15); border: none; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; font-size: 18px; display: grid; place-items: center; }
+
+/* ✅ Кнопка установки PWA */
+.install-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); width: 36px; height: 36px; border-radius: 10px; cursor: pointer; font-size: 16px; display: grid; place-items: center; transition: background 0.2s; }
+.install-btn:active { background: rgba(255,255,255,0.35); }
+.install-btn.hidden { display: none; }
+
 .position-select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.1); color: white; font-size: 15px; outline: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='white' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
 .position-select option { background: #1e293b; color: white; }
 
@@ -42,7 +52,7 @@ body {
 .month-nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; }
 .month-nav-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 9px; width: 36px; height: 36px; cursor: pointer; font-size: 18px; display: grid; place-items: center; }
 .month-name { font-size: 16px; font-weight: 700; }
-.mode-toggle { display: flex; background: var(--surface2); border-radius: 10px; padding: 3px; margin: 0 16px 12px; border: 1px solid var(--border); }
+.mode-toggle { display: flex; background: var(--surface2); border-radius: 10px; padding: 3px; border: 1px solid var(--border); }
 .mode-btn { flex: 1; padding: 8px; border: none; border-radius: 8px; background: none; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text-muted); }
 .mode-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.1); font-weight: 600; }
 
@@ -65,7 +75,7 @@ body {
 .legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-muted); }
 .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
 
-.settings-toggle-row { padding: 0 16px 12px; }
+.settings-toggle-row { padding: 12px 16px; }
 .toggle-btn { display: flex; align-items: center; gap: 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: 9px; cursor: pointer; font-size: 13px; color: var(--text-muted); padding: 8px 12px; width: 100%; }
 .collapsible { overflow: hidden; max-height: 0; transition: max-height 0.3s ease; }
 .collapsible.open { max-height: 800px; }
@@ -79,14 +89,15 @@ body {
 
 .calc-section { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 .calc-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
-.field-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
+.field-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; display: block; }
 .input-field { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font-size: 15px; outline: none; }
 .input-field:focus { border-color: var(--primary); }
 .btn-primary { width: 100%; padding: 13px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; }
-.btn-secondary { width: 100%; padding: 11px; background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; font-size: 14px; cursor: pointer; }
+.btn-secondary { flex: 1; padding: 11px; background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; font-size: 14px; cursor: pointer; }
 .btn-danger { padding: 9px 14px; background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 9px; cursor: pointer; }
 
-.salary-card { background: var(--primary); color: white; margin: 0 16px 16px; border-radius: 12px; padding: 20px; text-align: center; }
+.salary-card { background: var(--primary); color: white; margin: 0; border-radius: 12px; padding: 20px; text-align: center; }
+.salary-label-text { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; opacity: 0.7; text-transform: uppercase; }
 .salary-amount { font-size: 34px; font-weight: 800; margin: 4px 0; }
 .salary-formula { font-size: 12px; opacity: 0.6; margin-top: 8px; }
 
@@ -114,11 +125,15 @@ body {
 .shift-btn.shift-none   { background: var(--shift-none-bg);  color: var(--shift-none-text); }
 .hours-adjuster { display: flex; align-items: center; gap: 10px; }
 .adj-btn { width: 40px; height: 40px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--surface2); font-size: 22px; cursor: pointer; display: grid; place-items: center; }
-.adj-input { flex: 1; text-align: center; padding: 9px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 18px; font-weight: 700; }
+.adj-input { flex: 1; text-align: center; padding: 9px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 18px; font-weight: 700; background: var(--surface); color: var(--text); }
 .modal-actions { padding: 14px 20px 0; display: flex; flex-direction: column; gap: 8px; }
 
 .app-footer { text-align: center; padding: 20px 0 12px; color: var(--text-muted); font-size: 11px; opacity: 0.6; }
-.ios-banner { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 14px 16px; box-shadow: 0 -4px 12px rgba(0,0,0,0.1); z-index: 900; display: none; align-items: center; justify-content: space-between; gap: 10px; }
+.ios-banner { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 14px 16px; box-shadow: 0 -4px 12px rgba(0,0,0,0.1); z-index: 900; display: none; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; }
 .ios-banner.show { display: flex; }
-.ios-btn { background: var(--primary); color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-@media print { .app-header, .mode-toggle, .settings-toggle-row, .modal-overlay, .ios-banner, .app-footer { display: none !important; } body { max-width: none; background: white; color: black; } }
+.ios-btn { background: var(--primary); color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+
+@media print {
+  .app-header, .mode-toggle, .settings-toggle-row, .modal-overlay, .ios-banner, .app-footer { display: none !important; }
+  body { max-width: none; background: white; color: black; }
+}

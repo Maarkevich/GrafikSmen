@@ -2,17 +2,21 @@
 <html lang="ru" data-theme="auto">
 <head>
   <meta charset="UTF-8">
-  <!-- ✅ Manifest должен быть ПЕРВЫМ после charset -->
+  <!-- Manifest должен быть ПЕРВЫМ после charset -->
   <link rel="manifest" href="./manifest.json">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#1e293b">
-  
+
   <!-- iOS PWA Meta Tags -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="График">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
-  
+
+  <!-- Android / Chrome PWA -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="График">
+
   <title>График смен</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
@@ -22,7 +26,10 @@
   <header class="app-header">
     <div class="header-top">
       <h1 class="app-title">📅 График смен</h1>
-      <button id="theme-toggle" class="theme-btn" aria-label="Сменить тему">🌙</button>
+      <div class="header-actions">
+        <button id="btn-install" class="install-btn hidden" aria-label="Установить приложение" title="Установить">⬇️</button>
+        <button id="theme-toggle" class="theme-btn" aria-label="Сменить тему">🌙</button>
+      </div>
     </div>
     <select id="position-select" class="position-select" aria-label="Выберите должность">
       <option value="">— Выберите должность —</option>
@@ -46,7 +53,7 @@
       <div class="legend" id="legend"></div>
     </div>
 
-    <!-- 2. НАСТРОЙКИ ГРАФИКА (Сразу под календарём) -->
+    <!-- 2. НАСТРОЙКИ ГРАФИКА -->
     <div class="card">
       <div class="settings-toggle-row">
         <button id="toggle-settings" class="toggle-btn">⚙️ Настройка графика <span id="chevron">▾</span></button>
@@ -93,7 +100,7 @@
     </div>
   </main>
 
-  <footer class="app-footer"><span class="app-version" id="app-version">v3.3</span></footer>
+  <footer class="app-footer"><span class="app-version" id="app-version">v3.4</span></footer>
 
   <!-- iOS Баннер -->
   <div id="ios-banner" class="ios-banner">
@@ -130,13 +137,17 @@
     </div>
   </div>
 
-  <script src="./app.js" type="module" defer></script>
+  <script src="./app.js" defer></script>
   <script>
-    // ✅ Регистрация SW с обработкой ошибок (как в анализе)
+    // Регистрация Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('[SW] Успешно зарегистрирован:', reg.scope))
+          .then(reg => {
+            console.log('[SW] Зарегистрирован:', reg.scope);
+            // Проверяем обновление SW при каждом открытии
+            reg.update();
+          })
           .catch(err => console.error('[SW] Ошибка регистрации:', err));
       });
     }

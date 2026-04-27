@@ -1,4 +1,4 @@
-const APP_VERSION = '3.3';
+const APP_VERSION = '3.4';
 document.getElementById('app-version').textContent = `v${APP_VERSION}`;
 
 const POSITIONS = {
@@ -84,6 +84,34 @@ const renderSalary = () => {
 };
 const updateInputsToMonth = () => { const md = getMonthData(state.year,state.month); $('#ktu-input').value = md.ktu ?? 1; };
 
+// ✅ Android PWA Install Prompt
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Показываем кнопку установки
+  const btn = $('#btn-install');
+  if (btn) {
+    btn.classList.remove('hidden');
+    btn.onclick = async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log('[PWA] Результат установки:', outcome);
+      deferredPrompt = null;
+      btn.classList.add('hidden');
+    };
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  console.log('[PWA] Приложение установлено');
+  deferredPrompt = null;
+  const btn = $('#btn-install');
+  if (btn) btn.classList.add('hidden');
+});
+
 const init = () => {
   const loaded = safeLoad(STORAGE_KEY); if(loaded) Object.assign(state, loaded);
   const sel = $('#position-select'); sel.innerHTML = '<option value="">— Выберите должность —</option>' + Object.keys(POSITIONS).map(p=>`<option value="${p}">${p}</option>`).join(''); sel.value = state.position;
@@ -108,23 +136,39 @@ const init = () => {
   $('#adj-minus').onclick = () => { $('#adj-hours').value = Math.max(0, (parseFloat($('#adj-hours').value)||0) - 0.5); };
   $('#adj-plus').onclick = () => { $('#adj-hours').value = Math.min(24, (parseFloat($('#adj-hours').value)||0) + 0.5); };
 
-  $('#btn-export').onclick = () => { const csv = `Дата,Смена,Часы\n${Object.values(state.months).map(m => Object.values(m.cells).map(c => `${c.type},${c.hours}`).join('\n')).join('\n')}`; const blob = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'schedule.csv'; a.click(); };
-  $('#btn-backup').onclick = () => { const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `zp-backup-${new Date().toISOString().slice(0,10)}.json`; a.click(); };
+  // ✅ Исправлен экспорт CSV — добавлен revokeObjectURL
+  $('#btn-export').onclick = () => {
+    const rows = [['Дата','Смена','Часы']];
+    Object.entries(state.months).forEach(([mk, m]) => {
+      Object.entries(m.cells).forEach(([date, c]) => rows.push([date, c.type, c.hours]));
+    });
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'schedule.csv'; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  // ✅ Исправлен бэкап — добавлен revokeObjectURL
+  $('#btn-backup').onclick = () => {
+    const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `zp-backup-${new Date().toISOString().slice(0,10)}.json`; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
   $('#btn-restore').onclick = () => { const inp = document.createElement('input'); inp.type='file'; inp.accept='.json'; inp.onchange = e => { const f = e.target.files[0]; const r = new FileReader(); r.onload = () => { try { Object.assign(state, JSON.parse(r.result)); updateInputsToMonth(); renderAll(); safeSave(STORAGE_KEY, state); } catch { alert('Ошибка файла'); } }; r.readAsText(f); }; inp.click(); };
 
   const stored = localStorage.getItem('zp_theme'); const sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches; let theme = stored || (sysDark?'dark':'light'); applyTheme(theme);
   $('#theme-toggle').onclick = () => { const next = document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'; applyTheme(next); localStorage.setItem('zp_theme',next); };
 
+  // iOS install banner
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-  if (isIOS && !isStandalone && !localStorage.getItem('zp_ios_dismissed')) { $('#ios-banner').classList.add('show'); $('#ios-close').onclick = () => { $('#ios-banner').classList.remove('show'); localStorage.setItem('zp_ios_dismissed','1'); }; }
-
-  // ✅ Android PWA Prompt
-  let deferredPrompt;
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault();
-    deferredPrompt = e;
-  });
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  if (isIOS && !isStandalone && !localStorage.getItem('zp_ios_dismissed')) {
+    $('#ios-banner').classList.add('show');
+    $('#ios-close').onclick = () => { $('#ios-banner').classList.remove('show'); localStorage.setItem('zp_ios_dismissed','1'); };
+  }
 };
 
 let modalDay = null;
