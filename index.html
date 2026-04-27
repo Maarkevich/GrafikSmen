@@ -2,18 +2,17 @@
 <html lang="ru" data-theme="auto">
 <head>
   <meta charset="UTF-8">
-  <!-- Manifest должен быть ПЕРВЫМ после charset -->
-  <link rel="manifest" href="./manifest.json">
+  <link rel="manifest" href="/GrafikSmen/manifest.json">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#1e293b">
 
-  <!-- iOS PWA Meta Tags -->
+  <!-- iOS PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="График">
-  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+  <link rel="apple-touch-icon" href="/GrafikSmen/apple-touch-icon.png">
 
-  <!-- Android / Chrome PWA -->
+  <!-- Android PWA -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="application-name" content="График">
 
@@ -27,7 +26,7 @@
     <div class="header-top">
       <h1 class="app-title">📅 График смен</h1>
       <div class="header-actions">
-        <button id="btn-install" class="install-btn hidden" aria-label="Установить приложение" title="Установить">⬇️</button>
+        <button id="btn-install" class="install-btn hidden" aria-label="Установить приложение" title="Установить приложение">⬇️</button>
         <button id="theme-toggle" class="theme-btn" aria-label="Сменить тему">🌙</button>
       </div>
     </div>
@@ -100,7 +99,7 @@
     </div>
   </main>
 
-  <footer class="app-footer"><span class="app-version" id="app-version">v3.4</span></footer>
+  <footer class="app-footer"><span class="app-version" id="app-version">v3.5</span></footer>
 
   <!-- iOS Баннер -->
   <div id="ios-banner" class="ios-banner">
@@ -139,16 +138,15 @@
 
   <script src="./app.js" defer></script>
   <script>
-    // Регистрация Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
+        // scope явно указываем на подпапку репо
+        navigator.serviceWorker.register('/GrafikSmen/sw.js', { scope: '/GrafikSmen/' })
           .then(reg => {
-            console.log('[SW] Зарегистрирован:', reg.scope);
-            // Проверяем обновление SW при каждом открытии
+            console.log('[SW] Зарегистрирован, scope:', reg.scope);
             reg.update();
           })
-          .catch(err => console.error('[SW] Ошибка регистрации:', err));
+          .catch(err => console.error('[SW] Ошибка:', err));
       });
     }
   </script>
