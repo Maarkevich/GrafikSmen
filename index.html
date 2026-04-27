@@ -13,7 +13,6 @@
 <body>
   <a href="#main" class="skip-link">Перейти к основному содержимому</a>
 
-  <!-- === БЛОК 1: ШАПКА === -->
   <header class="app-header">
     <div class="header-top">
       <h1 class="app-title">📅 График смен</h1>
@@ -25,26 +24,21 @@
   </header>
 
   <main id="main" class="main">
-    <!-- === БЛОК 2: ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМА === -->
     <div class="mode-toggle">
       <button class="mode-btn active" data-mode="schedule">📅 По графику</button>
       <button class="mode-btn" data-mode="manual">✏️ Вручную</button>
     </div>
 
-    <!-- === БЛОК 3: НАВИГАЦИЯ И КАЛЕНДАРЬ === -->
     <div class="card">
-      <div class="card-header">
+      <div class="month-nav">
         <button class="month-nav-btn" id="prev-month" aria-label="Предыдущий месяц">‹</button>
         <span id="month-name" class="month-name"></span>
         <button class="month-nav-btn" id="next-month" aria-label="Следующий месяц">›</button>
       </div>
-      <div class="calendar-wrap">
-        <div class="calendar-grid" id="calendar-grid"></div>
-        <div class="legend" id="legend"></div>
-      </div>
+      <div class="calendar-grid" id="calendar-grid"></div>
+      <div class="legend" id="legend"></div>
     </div>
 
-    <!-- === БЛОК 4: СТАТИСТИКА === -->
     <div class="card">
       <div class="card-header"><h2>Итоги месяца</h2></div>
       <div class="summary-grid">
@@ -54,14 +48,16 @@
       </div>
     </div>
 
-    <!-- === БЛОК 5: РАСЧЁТ ЗАРПЛАТЫ === -->
     <div class="card">
       <div class="card-header"><h2>Расчёт зарплаты</h2></div>
       <div class="calc-section">
-        <div><label class="field-label">Часов за месяц</label><input type="number" id="manual-hours" class="input-field" min="0" max="400" placeholder="Введите количество часов"></div>
+        <div class="calc-row"><span class="calc-row-label">Часов (авто)</span><span class="calc-row-value" id="calc-auto-hours">0</span></div>
         <div class="calc-row"><span class="calc-row-label">Оклад</span><span class="calc-row-value" id="calc-salary">—</span></div>
         <div class="calc-row"><span class="calc-row-label">Норма часов</span><span class="calc-row-value" id="calc-norm">165 ч</span></div>
-        <div><label class="field-label">КТУ</label><input type="number" id="ktu-input" class="input-field" step="0.1" min="0" max="10" placeholder="Введите коэффициент"></div>
+        <div>
+          <label class="field-label">КТУ (коэффициент)</label>
+          <input type="number" id="ktu-input" class="input-field" step="0.1" min="0" max="10" placeholder="Введите коэффициент от 0 до 10">
+        </div>
         <div class="salary-card">
           <div class="salary-label-text">ИТОГО К ВЫПЛАТЕ</div>
           <div class="salary-amount" id="salary-total">0 ₽</div>
@@ -75,15 +71,20 @@
       </div>
     </div>
 
-    <!-- === БЛОК 6: НАСТРОЙКИ ГРАФИКА === -->
     <div class="card">
       <div class="settings-toggle-row">
-        <button id="toggle-settings" class="toggle-btn">⚙️ Настройка графика <i class="chevron">▾</i></button>
+        <button id="toggle-settings" class="toggle-btn">⚙️ Настройка графика <span id="chevron" style="transition:transform 0.2s">▾</span></button>
       </div>
       <div id="settings-panel" class="collapsible">
         <div class="settings-panel">
-          <div><label class="field-label">Дата начала цикла</label><input type="date" id="cycle-start" class="input-field"></div>
-          <div><label class="field-label">Тип смены в эту дату</label><select id="cycle-type" class="input-field"></select></div>
+          <div>
+            <label class="field-label">Дата начала цикла</label>
+            <input type="date" id="cycle-start" class="input-field">
+          </div>
+          <div>
+            <label class="field-label">Тип смены в эту дату</label>
+            <select id="cycle-type" class="input-field"></select>
+          </div>
           <button id="btn-apply-cycle" class="btn-primary">Применить к графику</button>
           <button id="btn-clear-month" class="btn-danger">Очистить ручные правки месяца</button>
         </div>
@@ -91,17 +92,15 @@
     </div>
   </main>
 
-  <!-- === БЛОК 7: ВЕРСИЯ И БАННЕРЫ === -->
   <footer class="app-footer">
     <span class="app-version" id="app-version">v3.1</span>
   </footer>
 
   <div id="ios-banner" class="ios-banner hidden">
-    <div class="ios-text">📲 Нажмите <b>Поделиться</b> → <b>На экран «Домой»</b> → Включите тумблер «Веб-приложение»</div>
+    <div style="font-size:13px">📲 Нажмите <b>Поделиться</b> → <b>На экран «Домой»</b> → Включите «Веб-приложение»</div>
     <button id="ios-close" class="ios-btn">OK</button>
   </div>
 
-  <!-- === БЛОК 8: МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ ДНЯ === -->
   <div id="day-modal" class="modal-overlay hidden">
     <div class="modal">
       <div class="modal-handle"></div>
@@ -111,14 +110,6 @@
       <div class="modal-section">
         <div class="modal-section-title">Тип смены</div>
         <div class="shift-grid" id="shift-grid"></div>
-      </div>
-
-      <div class="modal-section" id="extra-dur-section">
-        <div class="modal-section-title">Длительность доп. смены</div>
-        <div class="extra-dur-row">
-          <button class="extra-dur-btn active" data-dur="12">12 ч → 11 зачёт</button>
-          <button class="extra-dur-btn" data-dur="9">9 ч → 8 зачёт</button>
-        </div>
       </div>
 
       <div class="modal-section">
@@ -142,13 +133,9 @@
     </div>
   </div>
 
-  <!-- Скрипты -->
   <script src="./app.js" type="module" defer></script>
   <script>
-    // Регистрация сервис-воркера
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
-    }
+    if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
   </script>
 </body>
 </html>

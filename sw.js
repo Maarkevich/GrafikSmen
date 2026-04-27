@@ -5,39 +5,26 @@ VERSION: 3.1
 const CACHE_NAME = 'zp-calc-v3.1';
 const ASSETS = ['./', './index.html', './styles.css', './app.js', './manifest.json'];
 
-// === БЛОК 1: УСТАНОВКА ===
-// Кэшируем все основные файлы при первой загрузке
-self.addEventListener('install', (event) => {
-  console.log('[SW] Установка кэша:', CACHE_NAME);
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
-  self.skipWaiting(); // Активируем сразу, не ждём закрытия вкладок
+self.addEventListener('install', (e) => {
+  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
+  self.skipWaiting();
 });
 
-// === БЛОК 2: АКТИВАЦИЯ И ОЧИСТКА ===
-// Удаляем старые кэши, чтобы не хранить мусор
-self.addEventListener('activate', (event) => {
-  console.log('[SW] Активация:', CACHE_NAME);
-  event.waitUntil(
-    caches.keys().then(keys => 
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
-  );
-  clients.claim(); // Берём контроль над открытыми страницами
+self.addEventListener('activate', (e) => {
+  e.waitUntil(caches.keys().then(keys => 
+    Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+  ));
+  clients.claim();
 });
 
-// === БЛОК 3: ОБРАБОТКА ЗАПРОСОВ ===
-// Стратегия: Cache First + Network Fallback
-self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      // Фоновое обновление кэша, если есть интернет
-      const fetchPromise = fetch(event.request).then(res => {
-        if (res.ok) caches.open(CACHE_NAME).then(c => c.put(event.request, res.clone()));
+self.addEventListener('fetch', (e) => {
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      const fetchPromise = fetch(e.request).then(res => {
+        if (res.ok) caches.open(CACHE_NAME).then(c => c.put(e.request, res.clone()));
         return res;
       }).catch(() => cached);
-      
-      // Отдаём кэш сразу, если есть. Иначе ждём сеть.
       return cached || fetchPromise;
     })
   );
