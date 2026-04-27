@@ -2,6 +2,8 @@
 <html lang="ru" data-theme="auto">
 <head>
   <meta charset="UTF-8">
+  <!-- ✅ Manifest должен быть ПЕРВЫМ после charset -->
+  <link rel="manifest" href="./manifest.json">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#1e293b">
   
@@ -10,9 +12,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="График">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
-  
-  <!-- Android/Standard Manifest -->
-  <link rel="manifest" href="./manifest.json">
   
   <title>График смен</title>
   <link rel="stylesheet" href="./styles.css">
@@ -47,7 +46,7 @@
       <div class="legend" id="legend"></div>
     </div>
 
-    <!-- 2. НАСТРОЙКИ ГРАФИКА -->
+    <!-- 2. НАСТРОЙКИ ГРАФИКА (Сразу под календарём) -->
     <div class="card">
       <div class="settings-toggle-row">
         <button id="toggle-settings" class="toggle-btn">⚙️ Настройка графика <span id="chevron">▾</span></button>
@@ -94,16 +93,15 @@
     </div>
   </main>
 
-  <footer class="app-footer">
-    <span class="app-version" id="app-version">v3.2</span>
-  </footer>
+  <footer class="app-footer"><span class="app-version" id="app-version">v3.3</span></footer>
 
-  <!-- PWA Баннеры -->
+  <!-- iOS Баннер -->
   <div id="ios-banner" class="ios-banner">
     <div>📲 Нажмите <b>Поделиться</b> ↑ → <b>На экран «Домой»</b></div>
     <button id="ios-close" class="ios-btn">OK</button>
   </div>
 
+  <!-- Модалка -->
   <div id="day-modal" class="modal-overlay hidden">
     <div class="modal">
       <div class="modal-handle"></div>
@@ -134,7 +132,14 @@
 
   <script src="./app.js" type="module" defer></script>
   <script>
-    if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+    // ✅ Регистрация SW с обработкой ошибок (как в анализе)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('[SW] Успешно зарегистрирован:', reg.scope))
+          .catch(err => console.error('[SW] Ошибка регистрации:', err));
+      });
+    }
   </script>
 </body>
 </html>

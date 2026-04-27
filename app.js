@@ -1,4 +1,4 @@
-const APP_VERSION = '3.2';
+const APP_VERSION = '3.3';
 document.getElementById('app-version').textContent = `v${APP_VERSION}`;
 
 const POSITIONS = {
@@ -119,9 +119,11 @@ const init = () => {
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
   if (isIOS && !isStandalone && !localStorage.getItem('zp_ios_dismissed')) { $('#ios-banner').classList.add('show'); $('#ios-close').onclick = () => { $('#ios-banner').classList.remove('show'); localStorage.setItem('zp_ios_dismissed','1'); }; }
 
+  // ✅ Android PWA Prompt
   let deferredPrompt;
   window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault(); deferredPrompt = e;
+    e.preventDefault();
+    deferredPrompt = e;
   });
 };
 
