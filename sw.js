@@ -1,23 +1,19 @@
-/*
-VERSION: 3.1
-⚠️ ПРИ КАЖДОМ ОБНОВЛЕНИИ КОДА УВЕЛИЧИВАЙТЕ ЭТУ ВЕРСИЮ (напр. 3.1 → 3.2)
-*/
-const CACHE_NAME = 'zp-calc-v3.1';
+const CACHE_NAME = 'zp-calc-v3.2';
 const ASSETS = ['./', './index.html', './styles.css', './app.js', './manifest.json'];
 
-self.addEventListener('install', (e) => {
+self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
   self.skipWaiting();
 });
 
-self.addEventListener('activate', (e) => {
+self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(keys => 
     Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
   ));
   clients.claim();
 });
 
-self.addEventListener('fetch', (e) => {
+self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
     caches.match(e.request).then(cached => {

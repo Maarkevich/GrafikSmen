@@ -31,9 +31,9 @@
 
     <div class="card">
       <div class="month-nav">
-        <button class="month-nav-btn" id="prev-month" aria-label="Предыдущий месяц">‹</button>
+        <button class="month-nav-btn" id="prev-month">‹</button>
         <span id="month-name" class="month-name"></span>
-        <button class="month-nav-btn" id="next-month" aria-label="Следующий месяц">›</button>
+        <button class="month-nav-btn" id="next-month">›</button>
       </div>
       <div class="calendar-grid" id="calendar-grid"></div>
       <div class="legend" id="legend"></div>
@@ -73,18 +73,12 @@
 
     <div class="card">
       <div class="settings-toggle-row">
-        <button id="toggle-settings" class="toggle-btn">⚙️ Настройка графика <span id="chevron" style="transition:transform 0.2s">▾</span></button>
+        <button id="toggle-settings" class="toggle-btn">⚙️ Настройка графика <span id="chevron">▾</span></button>
       </div>
       <div id="settings-panel" class="collapsible">
         <div class="settings-panel">
-          <div>
-            <label class="field-label">Дата начала цикла</label>
-            <input type="date" id="cycle-start" class="input-field">
-          </div>
-          <div>
-            <label class="field-label">Тип смены в эту дату</label>
-            <select id="cycle-type" class="input-field"></select>
-          </div>
+          <div><label class="field-label">Дата начала цикла</label><input type="date" id="cycle-start" class="input-field"></div>
+          <div><label class="field-label">Тип смены в эту дату</label><select id="cycle-type" class="input-field"></select></div>
           <button id="btn-apply-cycle" class="btn-primary">Применить к графику</button>
           <button id="btn-clear-month" class="btn-danger">Очистить ручные правки месяца</button>
         </div>
@@ -93,10 +87,10 @@
   </main>
 
   <footer class="app-footer">
-    <span class="app-version" id="app-version">v3.1</span>
+    <span class="app-version" id="app-version">v3.2</span>
   </footer>
 
-  <div id="ios-banner" class="ios-banner hidden">
+  <div id="ios-banner" class="ios-banner">
     <div style="font-size:13px">📲 Нажмите <b>Поделиться</b> → <b>На экран «Домой»</b> → Включите «Веб-приложение»</div>
     <button id="ios-close" class="ios-btn">OK</button>
   </div>
@@ -106,12 +100,10 @@
       <div class="modal-handle"></div>
       <div class="modal-title" id="modal-title">Редактирование смены</div>
       <div class="modal-date-info" id="modal-date"></div>
-      
       <div class="modal-section">
         <div class="modal-section-title">Тип смены</div>
         <div class="shift-grid" id="shift-grid"></div>
       </div>
-
       <div class="modal-section">
         <div class="modal-section-title">Фактические часы (зачёт)</div>
         <div class="hours-adjuster">
@@ -120,12 +112,10 @@
           <button class="adj-btn" id="adj-plus">+</button>
         </div>
       </div>
-
       <div class="modal-section">
         <div class="modal-section-title">Заметка</div>
         <textarea id="day-note" class="input-field" placeholder="Необязательное примечание"></textarea>
       </div>
-
       <div class="modal-actions">
         <button id="btn-save-day" class="btn-primary">Сохранить</button>
         <button id="btn-cancel-day" class="btn-secondary">Отмена</button>
