@@ -1,5 +1,5 @@
 const CACHE_NAME = 'zp-calc-v3.2';
-const ASSETS = ['./', './index.html', './styles.css', './app.js', './manifest.json'];
+const ASSETS = ['./', './index.html', './styles.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));

@@ -6,13 +6,19 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f0f4f8",
+  "background_color": "#1e293b",
   "theme_color": "#1e293b",
   "icons": [
     {
-      "src": "image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%231e293b'/%3E%3Ctext x='96' y='130' text-anchor='middle' font-size='110' font-family='sans-serif'%3E%F0%9F%93%85%3C/text%3E%3C/svg%3E",
+      "src": "./icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

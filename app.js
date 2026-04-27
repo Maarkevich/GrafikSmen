@@ -30,9 +30,8 @@ const monthKey = (y, m) => `${y}-${String(m+1).padStart(2,'0')}`;
 const getMonthData = (y, m) => { const k = monthKey(y,m); if(!state.months[k]) state.months[k] = { ktu: null, cells: {} }; return state.months[k]; };
 
 const autoShift = (pos, y, m, d) => {
-  const cfg = POSITIONS[pos];
-  if (!pos || !state.cycleStartDate || !state.cycleStartType || !cfg) return null;
-  if (cfg.is5x2) { const dow = new Date(y,m,d).getDay(); return (dow===0||dow===6)?'off':'day'; }
+  const cfg = POSITIONS[pos]; if(!pos || !state.cycleStartDate || !state.cycleStartType || !cfg) return null;
+  if(cfg.is5x2) { const dow = new Date(y,m,d).getDay(); return (dow===0||dow===6)?'off':'day'; }
   const cycle = cfg.cycle; const startIdx = cycle.indexOf(state.cycleStartType); if(startIdx===-1) return null;
   const diff = Math.round((new Date(y,m,d)-new Date(state.cycleStartDate))/86400000);
   return cycle[((startIdx+diff)%cycle.length+cycle.length)%cycle.length];
@@ -109,15 +108,21 @@ const init = () => {
   $('#adj-minus').onclick = () => { $('#adj-hours').value = Math.max(0, (parseFloat($('#adj-hours').value)||0) - 0.5); };
   $('#adj-plus').onclick = () => { $('#adj-hours').value = Math.min(24, (parseFloat($('#adj-hours').value)||0) + 0.5); };
 
-  $('#btn-export').onclick = () => alert('Экспорт в CSV готов. Добавьте реализацию при необходимости.');
+  $('#btn-export').onclick = () => { const csv = `Дата,Смена,Часы\n${Object.values(state.months).map(m => Object.values(m.cells).map(c => `${c.type},${c.hours}`).join('\n')).join('\n')}`; const blob = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'schedule.csv'; a.click(); };
   $('#btn-backup').onclick = () => { const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `zp-backup-${new Date().toISOString().slice(0,10)}.json`; a.click(); };
   $('#btn-restore').onclick = () => { const inp = document.createElement('input'); inp.type='file'; inp.accept='.json'; inp.onchange = e => { const f = e.target.files[0]; const r = new FileReader(); r.onload = () => { try { Object.assign(state, JSON.parse(r.result)); updateInputsToMonth(); renderAll(); safeSave(STORAGE_KEY, state); } catch { alert('Ошибка файла'); } }; r.readAsText(f); }; inp.click(); };
 
   const stored = localStorage.getItem('zp_theme'); const sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches; let theme = stored || (sysDark?'dark':'light'); applyTheme(theme);
   $('#theme-toggle').onclick = () => { const next = document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'; applyTheme(next); localStorage.setItem('zp_theme',next); };
 
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent); const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
   if (isIOS && !isStandalone && !localStorage.getItem('zp_ios_dismissed')) { $('#ios-banner').classList.add('show'); $('#ios-close').onclick = () => { $('#ios-banner').classList.remove('show'); localStorage.setItem('zp_ios_dismissed','1'); }; }
+
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); deferredPrompt = e;
+  });
 };
 
 let modalDay = null;
@@ -127,15 +132,9 @@ function openModal(day) {
   $('#modal-title').textContent = `Редактирование смены`; $('#modal-date').textContent = `${day} ${MONTH_NAMES[state.month].toLowerCase()} ${state.year}`;
   $('#shift-grid').innerHTML = Object.keys(SHIFT_LABEL).filter(k=>k!=='none').map(k => `<button class="shift-btn ${SHIFT_CLASS[k]} ${cell.type===k?'active':''}" data-type="${k}">${SHIFT_LABEL[k]}</button>`).join('');
   $('#adj-hours').value = cell.hours ?? shiftHours(state.position,cell.type,cell.extraDur); $('#day-note').value = cell.note || ''; $('#day-modal').classList.remove('hidden');
-
-  document.querySelectorAll('.shift-btn').forEach(b => b.onclick = () => {
-    document.querySelectorAll('.shift-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); cell.type = b.dataset.type; $('#adj-hours').value = shiftHours(state.position,cell.type,cell.extraDur);
-  });
+  document.querySelectorAll('.shift-btn').forEach(b => b.onclick = () => { document.querySelectorAll('.shift-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); cell.type = b.dataset.type; $('#adj-hours').value = shiftHours(state.position,cell.type,cell.extraDur); });
 }
-function saveDayData() {
-  const md = getMonthData(state.year,state.month); const ck = cellKey(state.year,state.month,modalDay);
-  const activeBtn = document.querySelector('.shift-btn.active'); md.cells[ck] = { type: activeBtn?.dataset.type||'none', hours: parseFloat($('#adj-hours').value)||0, note: $('#day-note').value.trim() };
-}
+function saveDayData() { const md = getMonthData(state.year,state.month); const ck = cellKey(state.year,state.month,modalDay); const activeBtn = document.querySelector('.shift-btn.active'); md.cells[ck] = { type: activeBtn?.dataset.type||'none', hours: parseFloat($('#adj-hours').value)||0, note: $('#day-note').value.trim() }; }
 function renderAll() { renderCalendar(); renderStats(); renderSalary(); }
 function applyTheme(t) { document.documentElement.setAttribute('data-theme',t); $('#theme-toggle').textContent = t==='dark'?'☀️':'🌙'; }
 
