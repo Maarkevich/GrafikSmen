@@ -29,6 +29,7 @@
       <button class="mode-btn" data-mode="manual">✏️ Вручную</button>
     </div>
 
+    <!-- 1. КАЛЕНДАРЬ -->
     <div class="card">
       <div class="month-nav">
         <button class="month-nav-btn" id="prev-month">‹</button>
@@ -39,38 +40,7 @@
       <div class="legend" id="legend"></div>
     </div>
 
-    <div class="card">
-      <div class="card-header"><h2>Итоги месяца</h2></div>
-      <div class="summary-grid">
-        <div class="summary-item"><div class="summary-value" id="stat-workdays">0</div><div class="summary-label">Раб. дней</div></div>
-        <div class="summary-item"><div class="summary-value" id="stat-hours">0</div><div class="summary-label">Часов (зачёт)</div></div>
-        <div class="summary-item"><div class="summary-value" id="stat-nights">0</div><div class="summary-label">Ночных</div></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header"><h2>Расчёт зарплаты</h2></div>
-      <div class="calc-section">
-        <div class="calc-row"><span class="calc-row-label">Часов (авто)</span><span class="calc-row-value" id="calc-auto-hours">0</span></div>
-        <div class="calc-row"><span class="calc-row-label">Оклад</span><span class="calc-row-value" id="calc-salary">—</span></div>
-        <div class="calc-row"><span class="calc-row-label">Норма часов</span><span class="calc-row-value" id="calc-norm">165 ч</span></div>
-        <div>
-          <label class="field-label">КТУ (коэффициент)</label>
-          <input type="number" id="ktu-input" class="input-field" step="0.1" min="0" max="10" placeholder="Введите коэффициент от 0 до 10">
-        </div>
-        <div class="salary-card">
-          <div class="salary-label-text">ИТОГО К ВЫПЛАТЕ</div>
-          <div class="salary-amount" id="salary-total">0 ₽</div>
-          <div class="salary-formula" id="salary-formula"></div>
-        </div>
-        <div style="display:flex; gap:8px; padding:0 16px 16px;">
-          <button id="btn-export" class="btn-secondary">📤 CSV</button>
-          <button id="btn-backup" class="btn-secondary">💾 Бэкап</button>
-          <button id="btn-restore" class="btn-secondary">📥 Восст.</button>
-        </div>
-      </div>
-    </div>
-
+    <!-- 2. НАСТРОЙКИ ГРАФИКА (ПЕРЕМЕЩЕНО СЮДА) -->
     <div class="card">
       <div class="settings-toggle-row">
         <button id="toggle-settings" class="toggle-btn">⚙️ Настройка графика <span id="chevron">▾</span></button>
@@ -84,11 +54,40 @@
         </div>
       </div>
     </div>
+
+    <!-- 3. ИТОГИ -->
+    <div class="card">
+      <div class="card-header"><h2>Итоги месяца</h2></div>
+      <div class="summary-grid">
+        <div class="summary-item"><div class="summary-value" id="stat-workdays">0</div><div class="summary-label">Раб. дней</div></div>
+        <div class="summary-item"><div class="summary-value" id="stat-hours">0</div><div class="summary-label">Часов (зачёт)</div></div>
+        <div class="summary-item"><div class="summary-value" id="stat-nights">0</div><div class="summary-label">Ночных</div></div>
+      </div>
+    </div>
+
+    <!-- 4. ЗАРПЛАТА -->
+    <div class="card">
+      <div class="card-header"><h2>Расчёт зарплаты</h2></div>
+      <div class="calc-section">
+        <div class="calc-row"><span class="calc-row-label">Часов (авто)</span><span class="calc-row-value" id="calc-auto-hours">0</span></div>
+        <div class="calc-row"><span class="calc-row-label">Оклад</span><span class="calc-row-value" id="calc-salary">—</span></div>
+        <div class="calc-row"><span class="calc-row-label">Норма часов</span><span class="calc-row-value" id="calc-norm">165 ч</span></div>
+        <div><label class="field-label">КТУ (коэффициент)</label><input type="number" id="ktu-input" class="input-field" step="0.1" min="0" max="10" placeholder="Введите коэффициент от 0 до 10"></div>
+        <div class="salary-card">
+          <div class="salary-label-text">ИТОГО К ВЫПЛАТЕ</div>
+          <div class="salary-amount" id="salary-total">0 ₽</div>
+          <div class="salary-formula" id="salary-formula"></div>
+        </div>
+        <div style="display:flex; gap:8px; padding:0 16px 16px;">
+          <button id="btn-export" class="btn-secondary">📤 CSV</button>
+          <button id="btn-backup" class="btn-secondary">💾 Бэкап</button>
+          <button id="btn-restore" class="btn-secondary">📥 Восст.</button>
+        </div>
+      </div>
+    </div>
   </main>
 
-  <footer class="app-footer">
-    <span class="app-version" id="app-version">v3.2</span>
-  </footer>
+  <footer class="app-footer"><span class="app-version" id="app-version">v3.2</span></footer>
 
   <div id="ios-banner" class="ios-banner">
     <div style="font-size:13px">📲 Нажмите <b>Поделиться</b> → <b>На экран «Домой»</b> → Включите «Веб-приложение»</div>
