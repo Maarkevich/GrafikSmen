@@ -1,51 +1,44 @@
 {
   "name": "График смен",
   "short_name": "График",
-  "description": "Учёт смен, календарь и расчёт зарплаты",
-  
+  "description": "Учёт смен, график работы и расчёт зарплаты",
   "start_url": "/GrafikSmen/index.html",
   "scope": "/GrafikSmen/",
-  
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
-  
   "background_color": "#0f172a",
-  "theme_color": "#0f172a",
-  
-  "lang": "ru",
-  "dir": "ltr",
-  
+  "theme_color": "#1e293b",
+
   "icons": [
-    {
-      "src": "/GrafikSmen/Icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/GrafikSmen/Icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "/GrafikSmen/Icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/GrafikSmen/Icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
     {
       "src": "/GrafikSmen/apple-touch-icon.png",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "/GrafikSmen/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/GrafikSmen/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/GrafikSmen/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/GrafikSmen/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

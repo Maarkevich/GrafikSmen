@@ -6,73 +6,34 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-html {
+html, body {
   height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
 }
 
-/* ===== ПЕРЕМЕННЫЕ ===== */
+/* ===== THEMES ===== */
 :root {
-  --radius: 16px;
-
-  --bg: #f2f2f7;
-  --text: #1c1c1e;
-  --text-muted: #6e6e73;
-  --card: rgba(255,255,255,0.7);
-  --card-solid: #ffffff;
-  --border: rgba(0,0,0,0.08);
-
-  --accent1: #0a84ff;
-  --accent2: #5ac8fa;
+  --bg1: #0f172a;
+  --bg2: #1e293b;
+  --accent: #3b82f6;
 }
 
-/* ===== DARK ===== */
-html[data-theme="dark"] {
-  --bg: #000;
-  --text: #fff;
-  --text-muted: #8e8e93;
-  --card: rgba(28,28,30,0.7);
-  --card-solid: #1c1c1e;
-  --border: rgba(255,255,255,0.08);
+[data-theme="light"] {
+  --bg1: #c7d2fe;
+  --bg2: #e0f2fe;
 }
 
-/* ===== АКЦЕНТЫ (градиенты) ===== */
+[data-accent="purple"] { --accent: #8b5cf6; }
+[data-accent="green"] { --accent: #22c55e; }
+[data-accent="blue"] { --accent: #3b82f6; }
 
-/* BLUE */
-html[data-accent="blue"] {
-  --accent1: #0a84ff;
-  --accent2: #5ac8fa;
-}
-
-/* PURPLE */
-html[data-accent="purple"] {
-  --accent1: #bf5af2;
-  --accent2: #ff9ff3;
-}
-
-/* GREEN */
-html[data-accent="green"] {
-  --accent1: #30d158;
-  --accent2: #66ffd9;
-}
-
-/* ORANGE */
-html[data-accent="orange"] {
-  --accent1: #ff9f0a;
-  --accent2: #ff375f;
-}
-
-/* ===== BODY ===== */
+/* ===== BACKGROUND ===== */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-
-  background: var(--bg);
-  color: var(--text);
-
+  background: linear-gradient(160deg, var(--bg1), var(--bg2));
+  color: white;
   max-width: 520px;
   margin: 0 auto;
-
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* ===== HEADER ===== */
@@ -81,23 +42,17 @@ body {
   top: 0;
   z-index: 100;
 
+  padding: 16px;
+  padding-top: calc(16px + env(safe-area-inset-top));
+
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
-
-  padding:
-    calc(env(safe-area-inset-top) + 10px)
-    16px
-    12px;
+  background: rgba(0,0,0,0.25);
 }
 
 .header-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
 }
 
 .app-title {
@@ -105,95 +60,121 @@ body {
   font-weight: 700;
 }
 
-/* кнопки */
-.header-actions {
-  display: flex;
-  gap: 8px;
+/* ===== BUTTONS ===== */
+button {
+  border: none;
+  border-radius: 14px;
+  padding: 10px 12px;
+  font-size: 14px;
+  cursor: pointer;
+
+  backdrop-filter: blur(12px);
+  background: rgba(255,255,255,0.15);
+  color: white;
+  transition: 0.2s;
 }
 
-.theme-btn,
-.install-btn {
-  width: 36px;
-  height: 36px;
+button:active {
+  transform: scale(0.95);
+}
+
+/* ===== SELECT ===== */
+.position-select {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px;
   border-radius: 12px;
   border: none;
-
-  background: linear-gradient(135deg, var(--accent1), var(--accent2));
-  color: white;
-
-  font-size: 16px;
-}
-
-.install-btn.hidden {
-  display: none;
-}
-
-/* select */
-.position-select {
-  width: 100%;
-  padding: 10px 12px;
-
-  border-radius: 12px;
-  border: 1px solid var(--border);
-
-  background: var(--card-solid);
-  color: var(--text);
 }
 
 /* ===== MAIN ===== */
 .main {
-  padding: 12px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* ===== MODE ===== */
-.mode-toggle {
-  display: flex;
-  background: var(--card);
-  border-radius: 12px;
-  padding: 4px;
-}
-
-.mode-btn {
-  flex: 1;
-  border: none;
-  background: transparent;
-  padding: 8px;
-  border-radius: 10px;
-}
-
-.mode-btn.active {
-  background: linear-gradient(135deg, var(--accent1), var(--accent2));
-  color: white;
-}
-
 /* ===== CARD ===== */
 .card {
+  border-radius: 18px;
+  padding: 14px;
+
   backdrop-filter: blur(20px);
-  background: var(--card);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  overflow: hidden;
+  background: rgba(255,255,255,0.1);
 }
 
-/* ===== SECTION BUTTON ===== */
-.section-btn {
-  width: 100%;
-  padding: 12px;
+/* ===== TITLES ===== */
+.card h2 {
+  font-size: 17px;
+  font-weight: 800;
+  margin-left: 6px;
+  margin-bottom: 10px;
+  color: var(--accent);
+}
 
-  border: none;
-  background: none;
-
+/* ===== CALENDAR ===== */
+.month-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-
-  font-weight: 600;
+  margin-bottom: 8px;
 }
 
-/* ===== COLLAPSIBLE ===== */
+#month-name {
+  font-weight: 700;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.calendar-grid.animate {
+  animation: slide 0.25s ease;
+}
+
+@keyframes slide {
+  from { opacity: 0; transform: translateX(15px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.day-cell {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+/* ===== SHIFT COLORS ===== */
+.shift-day {
+  background: #facc15;
+  color: #000;
+}
+.shift-night {
+  background: #60a5fa;
+}
+.shift-sleep {
+  background: #a78bfa;
+}
+.shift-off {
+  background: #4ade80;
+  color: #000;
+}
+.shift-extra {
+  background: #f472b6;
+}
+
+/* ===== SETTINGS ===== */
+.toggle-btn {
+  width: 100%;
+  margin-bottom: 8px;
+  text-align: left;
+}
+
 .collapsible {
   max-height: 0;
   overflow: hidden;
@@ -201,163 +182,43 @@ body {
 }
 
 .collapsible.open {
-  max-height: 600px;
-}
-
-/* ===== SETTINGS ===== */
-.settings-panel {
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  max-height: 400px;
 }
 
 /* ===== INPUT ===== */
 .input-field {
+  width: 100%;
+  margin: 6px 0 10px;
   padding: 10px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--card-solid);
-  color: var(--text);
-}
-
-/* ===== BUTTONS ===== */
-.btn-primary {
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
-
-  background: linear-gradient(135deg, var(--accent1), var(--accent2));
-  color: white;
-}
-
-.btn-secondary {
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--card-solid);
-}
-
-.btn-danger {
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
-  background: #ff3b30;
-  color: white;
-}
-
-/* ===== CALENDAR ===== */
-.month-nav {
-  display: flex;
-  justify-content: space-between;
-  padding: 12px;
-}
-
-.month-nav-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  border: none;
-  background: var(--card-solid);
-}
-
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-  padding: 10px;
-}
-
-.day-header {
-  text-align: center;
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.day-cell {
-  aspect-ratio: 1;
   border-radius: 12px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  background: rgba(0,0,0,0.05);
-}
-
-.day-cell.today {
-  background: linear-gradient(135deg, var(--accent1), var(--accent2));
-  color: white;
-}
-
-/* ===== THEME GRID ===== */
-.theme-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-
-.theme-option {
-  height: 40px;
-  border-radius: 10px;
   border: none;
-}
-
-/* превью */
-.theme-option[data-accent="blue"] {
-  background: linear-gradient(135deg, #0a84ff, #5ac8fa);
-}
-.theme-option[data-accent="purple"] {
-  background: linear-gradient(135deg, #bf5af2, #ff9ff3);
-}
-.theme-option[data-accent="green"] {
-  background: linear-gradient(135deg, #30d158, #66ffd9);
-}
-.theme-option[data-accent="orange"] {
-  background: linear-gradient(135deg, #ff9f0a, #ff375f);
 }
 
 /* ===== SUMMARY ===== */
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  text-align: center;
-  padding: 10px;
+.summary {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 6px;
 }
 
 /* ===== SALARY ===== */
-.calc-section {
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.calc-row {
-  display: flex;
-  justify-content: space-between;
-}
-
-.salary-card {
-  padding: 16px;
-  border-radius: 12px;
+.salary-result {
+  font-size: 28px;
+  font-weight: 800;
   text-align: center;
-
-  background: linear-gradient(135deg, var(--accent1), var(--accent2));
-  color: white;
+  margin-top: 10px;
+  color: var(--accent);
 }
 
-/* ===== ACTIONS ===== */
-.actions-row {
+.actions {
   display: flex;
   gap: 6px;
+  margin-top: 10px;
 }
 
-/* ===== FOOTER ===== */
-.app-footer {
-  text-align: center;
-  padding: 16px;
-  color: var(--text-muted);
+.actions button {
+  flex: 1;
+  background: var(--accent);
 }
 
 /* ===== MODAL ===== */
@@ -365,6 +226,10 @@ body {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.4);
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
 }
 
 .modal-overlay.hidden {
@@ -372,31 +237,40 @@ body {
 }
 
 .modal {
-  position: absolute;
-  bottom: 0;
   width: 100%;
-
-  background: var(--card-solid);
   border-radius: 20px 20px 0 0;
-
   padding: 16px;
-}
-
-/* ===== iOS banner ===== */
-.ios-banner {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-
+  background: rgba(30,41,59,0.95);
   backdrop-filter: blur(20px);
-  background: var(--card);
-
-  padding: 12px;
-  display: none;
 }
 
-.ios-banner.show {
-  display: flex;
-  justify-content: space-between;
+#modal-date {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* ===== SHIFT BUTTONS ===== */
+.shift-grid {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.shift-btn {
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.shift-btn[data-type="day"] { background: #facc15; color:#000; }
+.shift-btn[data-type="night"] { background: #60a5fa; }
+.shift-btn[data-type="sleep"] { background: #a78bfa; }
+.shift-btn[data-type="off"] { background: #4ade80; color:#000; }
+.shift-btn[data-type="extra"] { background: #f472b6; }
+
+/* ===== FOOTER ===== */
+.app-footer {
+  text-align: center;
+  padding: 14px;
+  opacity: 0.6;
 }
