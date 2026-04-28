@@ -1,12 +1,13 @@
 /*
-VERSION: 4.7
+VERSION: 5.0
 ⚠️ МЕНЯЙ ВЕРСИЮ ПРИ КАЖДОМ ОБНОВЛЕНИИ
 */
 
-const CACHE_NAME = 'grafik-v4.7';
+const CACHE_NAME = 'grafik-v5.0';
 const BASE = '/GrafikSmen';
 
-const STATIC_ASSETS = [
+/* ===== ФАЙЛЫ ДЛЯ КЭША ===== */
+const ASSETS = [
   `${BASE}/`,
   `${BASE}/index.html`,
   `${BASE}/styles.css`,
@@ -22,11 +23,12 @@ self.addEventListener('install', (event) => {
   console.log('[SW] Install:', CACHE_NAME);
 
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(ASSETS);
+    })
   );
 
-  self.skipWaiting();
+  self.skipWaiting(); // сразу активируем
 });
 
 /* ===== ACTIVATE ===== */
@@ -36,17 +38,17 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
-        keys
-          .filter(key => key !== CACHE_NAME)
-          .map(key => {
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
             console.log('[SW] Delete old cache:', key);
             return caches.delete(key);
-          })
+          }
+        })
       )
     )
   );
 
-  self.clients.claim();
+  self.clients.claim(); // берём контроль сразу
 });
 
 /* ===== FETCH ===== */
@@ -55,41 +57,44 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
 
-  // только наш scope
-  if (!url.pathname.startsWith(BASE)) return;
+  // Только свой домен
+  if (!url.origin.includes(self.location.origin)) return;
 
-  // ===== HTML — network first =====
+  // Навигация (страницы)
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-          return response;
+        .then(res => {
+          return res;
         })
-        .catch(() => caches.match(`${BASE}/index.html`))
+        .catch(() => {
+          return caches.match(`${BASE}/index.html`);
+        })
     );
     return;
   }
 
-  // ===== остальное — cache first =====
+  // Остальное: cache first
   event.respondWith(
-    caches.match(event.request)
-      .then(cached => {
-        if (cached) return cached;
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
 
-        return fetch(event.request)
-          .then(response => {
-            if (!response || response.status !== 200) return response;
+      return fetch(event.request).then(res => {
+        const clone = res.clone();
 
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, clone);
+        });
 
-            return response;
-          });
-      })
-      .catch(() => {
-        return new Response('Offline', { status: 503 });
-      })
+        return res;
+      });
+    })
   );
+});
+
+/* ===== ОБНОВЛЕНИЕ ПРИ ОТКРЫТИИ ===== */
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });

@@ -1,20 +1,21 @@
 {
-  "id": "/GrafikSmen/",
   "name": "График смен",
   "short_name": "График",
-  "description": "Учёт смен и расчёт зарплаты",
-
+  "description": "Учёт смен, календарь и расчёт зарплаты",
+  
   "start_url": "/GrafikSmen/index.html",
   "scope": "/GrafikSmen/",
-
+  
   "display": "standalone",
-  "display_override": ["standalone", "fullscreen"],
-
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
-
-  "background_color": "#f2f2f7",
-  "theme_color": "#0a84ff",
-
+  
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  
+  "lang": "ru",
+  "dir": "ltr",
+  
   "icons": [
     {
       "src": "/GrafikSmen/Icon-192.png",
@@ -43,7 +44,8 @@
     {
       "src": "/GrafikSmen/apple-touch-icon.png",
       "sizes": "180x180",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }

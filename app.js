@@ -1,24 +1,35 @@
-const APP_VERSION = '4.7';
-document.getElementById('app-version').textContent = `v${APP_VERSION}`;
+/* ===== VERSION ===== */
+const APP_VERSION = '5.0';
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('app-version').textContent = `v${APP_VERSION}`;
+});
 
 /* ===== ДАННЫЕ ===== */
 const POSITIONS = {
   'РТС': { salary: 33850, hoursPerShift: 11, cycleType: 'cyclic', cycle: ['day','day','off','off'], is5x2: false },
+  'Прессовщик': { salary: 33850, hoursPerShift: 11, cycleType: 'cyclic', cycle: ['day','day','off','off'], is5x2: false },
   'Водитель склад': { salary: 34500, hoursPerShift: 8, cycleType: '5x2', is5x2: true },
-  'Начальник смены': { salary: 37500, hoursPerShift: 11, cycleType: 'cyclic', cycle: ['day','day','off','off','night','night','off','off'], is5x2: false }
+  'Водитель смена': { salary: 34500, hoursPerShift: 11, cycleType: 'cyclic', cycle: ['day','day','off','off'], is5x2: false },
+  'Разнорабочий': { salary: 33850, hoursPerShift: 8, cycleType: '5x2', is5x2: true },
+  'Упаковщик': { salary: 33850, hoursPerShift: 11, cycleType: 'cyclic', cycle: ['day','day','off','off'], is5x2: false },
+  'Диспетчер': { salary: 34500, hoursPerShift: 11, cycleType: 'cyclic', cycle: ['day','day','off','off'], is5x2: false },
+  'Начальник смены': { salary: 37500, hoursPerShift: 11, cycleType: 'cyclic', cycle: ['day','day','off','off','night','night','off','off'], is5x2: false },
+  'Мельник': { salary: 33850, hoursPerShift: 11, cycleType: 'cyclic', cycle: ['day','day','off','off','night','night','off','off'], is5x2: false },
+  'Автоклавщик': { salary: 33850, hoursPerShift: 11, cycleType: 'cyclic', cycle: ['day','night','off','off'], is5x2: false }
 };
 
 const SHIFT_LABEL = {
   day:'День',
   night:'Ночь',
   off:'Выходной',
+  extra:'Доп',
   none:''
 };
 
 const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const DAY_NAMES_HEADER = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 
-const STORAGE_KEY = 'zp_calc_v4';
+const STORAGE_KEY = 'zp_calc_v5';
 
 /* ===== STATE ===== */
 const state = {
@@ -34,7 +45,6 @@ const $ = s => document.querySelector(s);
 function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
-
 function load() {
   const data = localStorage.getItem(STORAGE_KEY);
   if (data) Object.assign(state, JSON.parse(data));
@@ -42,21 +52,19 @@ function load() {
 
 /* ===== КАЛЕНДАРЬ ===== */
 function renderCalendar() {
-  $('#month-name').textContent = `${MONTH_NAMES[state.month]} ${state.year}`;
   const grid = $('#calendar-grid');
   grid.innerHTML = '';
 
-  // дни недели
+  $('#month-name').textContent = `${MONTH_NAMES[state.month]} ${state.year}`;
+
   DAY_NAMES_HEADER.forEach(d => {
     grid.innerHTML += `<div class="day-header">${d}</div>`;
   });
 
-  const first = new Date(state.year, state.month, 1);
-  let start = first.getDay();
-  if (start === 0) start = 7;
+  let first = new Date(state.year, state.month, 1).getDay();
+  if (first === 0) first = 7;
 
-  // отступ
-  for (let i = 1; i < start; i++) {
+  for (let i = 1; i < first; i++) {
     grid.innerHTML += `<div class="day-cell empty"></div>`;
   }
 
@@ -74,6 +82,33 @@ function renderCalendar() {
       </div>
     `;
   }
+}
+
+/* ===== МОДАЛКА ===== */
+let modalDay = null;
+
+function openModal(day) {
+  modalDay = day;
+
+  $('#modal-date').textContent =
+    `${day} ${MONTH_NAMES[state.month]} ${state.year}`;
+
+  const grid = $('#shift-grid');
+
+  grid.innerHTML = Object.keys(SHIFT_LABEL)
+    .filter(k => k !== 'none')
+    .map(k => `<button class="btn-secondary shift-btn" data-type="${k}">${SHIFT_LABEL[k]}</button>`)
+    .join('');
+
+  document.querySelectorAll('.shift-btn').forEach(btn => {
+    btn.onclick = () => btn.classList.toggle('active');
+  });
+
+  $('#day-modal').classList.remove('hidden');
+}
+
+function saveDay() {
+  $('#day-modal').classList.add('hidden');
 }
 
 /* ===== МЕСЯЦ ===== */
@@ -97,7 +132,7 @@ function nextMonth() {
   save();
 }
 
-/* ===== СВАЙПЫ ===== */
+/* ===== СВАЙП ===== */
 let touchStartX = 0;
 
 document.addEventListener('touchstart', e => {
@@ -107,101 +142,94 @@ document.addEventListener('touchstart', e => {
 document.addEventListener('touchend', e => {
   const diff = e.changedTouches[0].screenX - touchStartX;
 
-  if (Math.abs(diff) > 50) {
-    if (diff > 0) prevMonth();
-    else nextMonth();
+  if (Math.abs(diff) > 60) {
+    diff > 0 ? prevMonth() : nextMonth();
   }
 });
 
-/* ===== ЗАРПЛАТА (упрощённая логика) ===== */
-function renderSalary() {
-  const pos = POSITIONS[state.position];
-  if (!pos) {
-    $('#calc-salary').textContent = '—';
-    $('#salary-total').textContent = '0 ₽';
-    return;
-  }
+/* ===== ТЕМЫ ===== */
+function applyTheme(theme, accent) {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.documentElement.setAttribute('data-accent', accent);
+  localStorage.setItem('ui_theme', theme);
+  localStorage.setItem('ui_accent', accent);
+}
 
-  $('#calc-salary').textContent = `${pos.salary.toLocaleString('ru-RU')} ₽`;
+function initTheme() {
+  const t = localStorage.getItem('ui_theme') || 'light';
+  const a = localStorage.getItem('ui_accent') || 'blue';
+  applyTheme(t, a);
 
-  const hours = 160;
-  $('#calc-auto-hours').textContent = hours;
+  document.querySelectorAll('.theme-option').forEach(btn => {
+    btn.onclick = () => {
+      applyTheme(btn.dataset.theme, btn.dataset.accent);
+    };
+  });
 
-  const ktu = parseFloat($('#ktu-input').value) || 1;
+  $('#theme-toggle').onclick = () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark',
+      localStorage.getItem('ui_accent') || 'blue');
+  };
+}
 
-  const total = Math.round(pos.salary * ktu);
-  $('#salary-total').textContent = `${total.toLocaleString('ru-RU')} ₽`;
+/* ===== COLLAPSIBLE ===== */
+function togglePanel(btnId, panelId, chevronId) {
+  $(btnId).onclick = () => {
+    const panel = $(panelId);
+    panel.classList.toggle('open');
+
+    const ch = $(chevronId);
+    ch.style.transform = panel.classList.contains('open')
+      ? 'rotate(180deg)'
+      : 'rotate(0deg)';
+  };
 }
 
 /* ===== INIT ===== */
 function init() {
   load();
 
-  // позиции
   const sel = $('#position-select');
+
   sel.innerHTML =
     '<option value="">— Выберите должность —</option>' +
-    Object.keys(POSITIONS).map(p => `<option value="${p}">${p}</option>`).join('');
+    Object.keys(POSITIONS)
+      .map(p => `<option value="${p}">${p}</option>`)
+      .join('');
 
   sel.value = state.position;
 
   sel.onchange = e => {
     state.position = e.target.value;
-    renderSalary();
     save();
   };
 
-  $('#ktu-input').oninput = () => {
-    renderSalary();
-    save();
+  $('#calendar-grid').onclick = e => {
+    const d = e.target.closest('.day-cell')?.dataset.day;
+    if (d) openModal(d);
+  };
+
+  $('#btn-save-day').onclick = saveDay;
+  $('#btn-cancel-day').onclick = () => {
+    $('#day-modal').classList.add('hidden');
   };
 
   $('#prev-month').onclick = prevMonth;
   $('#next-month').onclick = nextMonth;
 
+  togglePanel('#toggle-settings', '#settings-panel', '#chevron-settings');
+  togglePanel('#toggle-theme-panel', '#theme-panel', '#chevron-theme');
+
+  initTheme();
+
   renderAll();
 }
 
-/* ===== РЕНДЕР ВСЕГО ===== */
+/* ===== RENDER ===== */
 function renderAll() {
   renderCalendar();
-  renderSalary();
-}
-
-/* ===== PWA INSTALL ===== */
-let deferredPrompt;
-
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-
-  const btn = $('#btn-install');
-  btn.classList.remove('hidden');
-
-  btn.onclick = async () => {
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    btn.classList.add('hidden');
-  };
-});
-
-/* ===== iOS banner ===== */
-function iosBanner() {
-  const isIOS = /iPhone|iPad/.test(navigator.userAgent);
-  const isStandalone = window.navigator.standalone;
-
-  if (isIOS && !isStandalone && !localStorage.getItem('ios_hide')) {
-    $('#ios-banner').classList.add('show');
-
-    $('#ios-close').onclick = () => {
-      $('#ios-banner').classList.remove('show');
-      localStorage.setItem('ios_hide', '1');
-    };
-  }
 }
 
 /* ===== START ===== */
-document.addEventListener('DOMContentLoaded', () => {
-  init();
-  iosBanner();
-});
+document.addEventListener('DOMContentLoaded', init);
