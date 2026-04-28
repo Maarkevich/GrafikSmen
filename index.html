@@ -2,8 +2,13 @@
 <html lang="ru" data-theme="auto">
 <head>
   <meta charset="UTF-8">
+
+  <!-- PWA -->
   <link rel="manifest" href="/GrafikSmen/manifest.json">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <!-- ВАЖНО: safe-area для iPhone -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
   <meta name="theme-color" content="#1e293b">
 
   <!-- iOS PWA -->
@@ -12,143 +17,190 @@
   <meta name="apple-mobile-web-app-title" content="График">
   <link rel="apple-touch-icon" href="/GrafikSmen/apple-touch-icon.png">
 
-  <!-- Android PWA -->
+  <!-- Android -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="application-name" content="График">
 
   <title>График смен</title>
+
   <link rel="stylesheet" href="./styles.css">
 </head>
+
 <body>
-  <a href="#main" class="skip-link">Перейти к основному содержимому</a>
 
-  <header class="app-header">
-    <div class="header-top">
-      <h1 class="app-title">📅 График смен</h1>
-      <div class="header-actions">
-        <button id="btn-install" class="install-btn hidden" aria-label="Установить приложение" title="Установить приложение">⬇️</button>
-        <button id="theme-toggle" class="theme-btn" aria-label="Сменить тему">🌙</button>
-      </div>
+<!-- HEADER -->
+<header class="app-header">
+  <div class="header-top">
+    <h1 class="app-title">📅 График смен</h1>
+
+    <div class="header-actions">
+      <button id="btn-install" class="install-btn hidden" title="Установить">⬇️</button>
+      <button id="theme-toggle" class="theme-btn">🌙</button>
     </div>
-    <select id="position-select" class="position-select" aria-label="Выберите должность">
-      <option value="">— Выберите должность —</option>
-    </select>
-  </header>
-
-  <main id="main" class="main">
-    <div class="mode-toggle">
-      <button class="mode-btn active" data-mode="schedule">📅 По графику</button>
-      <button class="mode-btn" data-mode="manual">✏️ Вручную</button>
-    </div>
-
-    <!-- 1. КАЛЕНДАРЬ -->
-    <div class="card">
-      <div class="month-nav">
-        <button class="month-nav-btn" id="prev-month">‹</button>
-        <span id="month-name" class="month-name"></span>
-        <button class="month-nav-btn" id="next-month">›</button>
-      </div>
-      <div class="calendar-grid" id="calendar-grid"></div>
-      <div class="legend" id="legend"></div>
-    </div>
-
-    <!-- 2. НАСТРОЙКИ ГРАФИКА -->
-    <div class="card">
-      <div class="settings-toggle-row">
-        <button id="toggle-settings" class="toggle-btn">⚙️ Настройка графика <span id="chevron">▾</span></button>
-      </div>
-      <div id="settings-panel" class="collapsible">
-        <div class="settings-panel">
-          <div><label class="field-label">Дата начала цикла</label><input type="date" id="cycle-start" class="input-field"></div>
-          <div><label class="field-label">Тип смены в эту дату</label><select id="cycle-type" class="input-field"></select></div>
-          <button id="btn-apply-cycle" class="btn-primary">Применить к графику</button>
-          <button id="btn-clear-month" class="btn-danger">Очистить ручные правки месяца</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. ИТОГИ -->
-    <div class="card">
-      <div class="card-header"><h2>Итоги месяца</h2></div>
-      <div class="summary-grid">
-        <div class="summary-item"><div class="summary-value" id="stat-workdays">0</div><div class="summary-label">Раб. дней</div></div>
-        <div class="summary-item"><div class="summary-value" id="stat-hours">0</div><div class="summary-label">Часов (зачёт)</div></div>
-        <div class="summary-item"><div class="summary-value" id="stat-nights">0</div><div class="summary-label">Ночных</div></div>
-      </div>
-    </div>
-
-    <!-- 4. ЗАРПЛАТА -->
-    <div class="card">
-      <div class="card-header"><h2>Расчёт зарплаты</h2></div>
-      <div class="calc-section">
-        <div class="calc-row"><span class="calc-row-label">Часов (авто)</span><span class="calc-row-value" id="calc-auto-hours">0</span></div>
-        <div class="calc-row"><span class="calc-row-label">Оклад</span><span class="calc-row-value" id="calc-salary">—</span></div>
-        <div class="calc-row"><span class="calc-row-label">Норма часов</span><span class="calc-row-value" id="calc-norm">165 ч</span></div>
-        <div><label class="field-label">КТУ (коэффициент)</label><input type="number" id="ktu-input" class="input-field" step="0.1" min="0" max="10" placeholder="Введите коэффициент от 0 до 10"></div>
-        <div class="salary-card">
-          <div class="salary-label-text">ИТОГО К ВЫПЛАТЕ</div>
-          <div class="salary-amount" id="salary-total">0 ₽</div>
-          <div class="salary-formula" id="salary-formula"></div>
-        </div>
-        <div style="display:flex; gap:8px; padding:0 16px 16px;">
-          <button id="btn-export" class="btn-secondary">📤 CSV</button>
-          <button id="btn-backup" class="btn-secondary">💾 Бэкап</button>
-          <button id="btn-restore" class="btn-secondary">📥 Восст.</button>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <footer class="app-footer"><span class="app-version" id="app-version">v3.5</span></footer>
-
-  <!-- iOS Баннер -->
-  <div id="ios-banner" class="ios-banner">
-    <div>📲 Нажмите <b>Поделиться</b> ↑ → <b>На экран «Домой»</b></div>
-    <button id="ios-close" class="ios-btn">OK</button>
   </div>
 
-  <!-- Модалка -->
-  <div id="day-modal" class="modal-overlay hidden">
-    <div class="modal">
-      <div class="modal-handle"></div>
-      <div class="modal-title" id="modal-title">Редактирование смены</div>
-      <div class="modal-date-info" id="modal-date"></div>
-      <div class="modal-section">
-        <div class="modal-section-title">Тип смены</div>
-        <div class="shift-grid" id="shift-grid"></div>
-      </div>
-      <div class="modal-section">
-        <div class="modal-section-title">Фактические часы (зачёт)</div>
-        <div class="hours-adjuster">
-          <button class="adj-btn" id="adj-minus">−</button>
-          <input type="number" id="adj-hours" class="adj-input" step="0.5" min="0" max="24">
-          <button class="adj-btn" id="adj-plus">+</button>
+  <select id="position-select" class="position-select">
+    <option value="">— Выберите должность —</option>
+  </select>
+</header>
+
+<!-- MAIN -->
+<main id="main" class="main">
+
+  <!-- режим -->
+  <div class="mode-toggle">
+    <button class="mode-btn active" data-mode="schedule">📅 По графику</button>
+    <button class="mode-btn" data-mode="manual">✏️ Вручную</button>
+  </div>
+
+  <!-- календарь -->
+  <div class="card">
+    <div class="month-nav">
+      <button class="month-nav-btn" id="prev-month">‹</button>
+      <span id="month-name" class="month-name"></span>
+      <button class="month-nav-btn" id="next-month">›</button>
+    </div>
+
+    <div class="calendar-grid" id="calendar-grid"></div>
+
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <!-- настройки -->
+  <div class="card">
+    <div class="settings-toggle-row">
+      <button id="toggle-settings" class="toggle-btn">
+        ⚙️ Настройка графика
+        <span id="chevron">▾</span>
+      </button>
+    </div>
+
+    <div id="settings-panel" class="collapsible">
+      <div class="settings-panel">
+
+        <div>
+          <label class="field-label">Дата начала цикла</label>
+          <input type="date" id="cycle-start" class="input-field">
         </div>
-      </div>
-      <div class="modal-section">
-        <div class="modal-section-title">Заметка</div>
-        <textarea id="day-note" class="input-field" placeholder="Необязательное примечание"></textarea>
-      </div>
-      <div class="modal-actions">
-        <button id="btn-save-day" class="btn-primary">Сохранить</button>
-        <button id="btn-cancel-day" class="btn-secondary">Отмена</button>
+
+        <div>
+          <label class="field-label">Тип смены</label>
+          <select id="cycle-type" class="input-field"></select>
+        </div>
+
+        <button id="btn-apply-cycle" class="btn-primary">Применить</button>
+        <button id="btn-clear-month" class="btn-danger">Очистить месяц</button>
+
       </div>
     </div>
   </div>
 
-  <script src="./app.js" defer></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        // scope явно указываем на подпапку репо
-        navigator.serviceWorker.register('/GrafikSmen/sw.js', { scope: '/GrafikSmen/' })
-          .then(reg => {
-            console.log('[SW] Зарегистрирован, scope:', reg.scope);
-            reg.update();
-          })
-          .catch(err => console.error('[SW] Ошибка:', err));
-      });
-    }
-  </script>
+  <!-- итоги -->
+  <div class="card">
+    <div class="card-header"><h2>Итоги</h2></div>
+
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="summary-value" id="stat-workdays">0</div>
+        <div class="summary-label">Дней</div>
+      </div>
+
+      <div class="summary-item">
+        <div class="summary-value" id="stat-hours">0</div>
+        <div class="summary-label">Часов</div>
+      </div>
+
+      <div class="summary-item">
+        <div class="summary-value" id="stat-nights">0</div>
+        <div class="summary-label">Ночных</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- зарплата -->
+  <div class="card">
+    <div class="card-header"><h2>Зарплата</h2></div>
+
+    <div class="calc-section">
+
+      <div class="calc-row">
+        <span>Часы</span>
+        <span id="calc-auto-hours">0</span>
+      </div>
+
+      <div class="calc-row">
+        <span>Оклад</span>
+        <span id="calc-salary">—</span>
+      </div>
+
+      <div>
+        <label class="field-label">КТУ</label>
+        <input type="number" id="ktu-input" class="input-field" step="0.1" value="1">
+      </div>
+
+      <div class="salary-card">
+        <div class="salary-label-text">К выплате</div>
+        <div class="salary-amount" id="salary-total">0 ₽</div>
+      </div>
+
+      <div class="actions-row">
+        <button id="btn-export" class="btn-secondary">CSV</button>
+        <button id="btn-backup" class="btn-secondary">Бэкап</button>
+        <button id="btn-restore" class="btn-secondary">Восст.</button>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="app-footer">
+  <span id="app-version">v</span>
+</footer>
+
+<!-- iOS баннер -->
+<div id="ios-banner" class="ios-banner">
+  <div>📲 Поделиться → На экран «Домой»</div>
+  <button id="ios-close">OK</button>
+</div>
+
+<!-- модалка -->
+<div id="day-modal" class="modal-overlay hidden">
+  <div class="modal">
+
+    <div class="modal-title" id="modal-title">Смена</div>
+    <div class="modal-date-info" id="modal-date"></div>
+
+    <div class="modal-section">
+      <div class="shift-grid" id="shift-grid"></div>
+    </div>
+
+    <div class="modal-section">
+      <input type="number" id="adj-hours">
+    </div>
+
+    <div class="modal-section">
+      <textarea id="day-note"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button id="btn-save-day">Сохранить</button>
+      <button id="btn-cancel-day">Отмена</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="./app.js"></script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/GrafikSmen/sw.js', { scope: '/GrafikSmen/' });
+  });
+}
+</script>
+
 </body>
 </html>

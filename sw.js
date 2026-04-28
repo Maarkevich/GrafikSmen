@@ -1,10 +1,12 @@
 /*
-VERSION: 3.5
-⚠️ ПРИ КАЖДОМ ОБНОВЛЕНИИ КОДА УВЕЛИЧИВАЙТЕ ЭТУ ВЕРСИЮ
+VERSION: 4.7
+⚠️ МЕНЯЙ ВЕРСИЮ ПРИ КАЖДОМ ОБНОВЛЕНИИ
 */
-const CACHE_NAME = 'zp-calc-v3.5';
+
+const CACHE_NAME = 'grafik-v4.7';
 const BASE = '/GrafikSmen';
-const ASSETS_TO_CACHE = [
+
+const STATIC_ASSETS = [
   `${BASE}/`,
   `${BASE}/index.html`,
   `${BASE}/styles.css`,
@@ -15,52 +17,79 @@ const ASSETS_TO_CACHE = [
   `${BASE}/apple-touch-icon.png`
 ];
 
-// 1. Установка
+/* ===== INSTALL ===== */
 self.addEventListener('install', (event) => {
-  console.log('[SW] Установка кэша:', CACHE_NAME);
+  console.log('[SW] Install:', CACHE_NAME);
+
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_CACHE))
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(STATIC_ASSETS))
   );
+
   self.skipWaiting();
 });
 
-// 2. Активация — удаляем старые кеши
+/* ===== ACTIVATE ===== */
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Активация:', CACHE_NAME);
+  console.log('[SW] Activate:', CACHE_NAME);
+
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => {
-          console.log('[SW] Удаляем старый кеш:', key);
-          return caches.delete(key);
-        })
+        keys
+          .filter(key => key !== CACHE_NAME)
+          .map(key => {
+            console.log('[SW] Delete old cache:', key);
+            return caches.delete(key);
+          })
       )
     )
   );
-  clients.claim();
+
+  self.clients.claim();
 });
 
-// 3. Network First + Cache Fallback
+/* ===== FETCH ===== */
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
+  const url = new URL(event.request.url);
+
+  // только наш scope
+  if (!url.pathname.startsWith(BASE)) return;
+
+  // ===== HTML — network first =====
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+          return response;
+        })
+        .catch(() => caches.match(`${BASE}/index.html`))
+    );
+    return;
+  }
+
+  // ===== остальное — cache first =====
   event.respondWith(
-    fetch(event.request)
-      .then(networkResponse => {
-        if (networkResponse && networkResponse.ok) {
-          const clone = networkResponse.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        }
-        return networkResponse;
+    caches.match(event.request)
+      .then(cached => {
+        if (cached) return cached;
+
+        return fetch(event.request)
+          .then(response => {
+            if (!response || response.status !== 200) return response;
+
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+
+            return response;
+          });
       })
       .catch(() => {
-        return caches.match(event.request).then(cached => {
-          if (cached) return cached;
-          if (event.request.mode === 'navigate') {
-            return caches.match(`${BASE}/index.html`);
-          }
-          return new Response('Нет соединения', { status: 503 });
-        });
+        return new Response('Offline', { status: 503 });
       })
   );
 });
