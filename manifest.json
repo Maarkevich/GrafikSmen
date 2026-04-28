@@ -6,8 +6,8 @@
   "scope": "/GrafikSmen/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0f172a",
-  "theme_color": "#1e293b",
+  "background_color": "#0b1228",
+  "theme_color": "#0b1228",
 
   "icons": [
     {

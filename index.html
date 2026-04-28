@@ -6,10 +6,11 @@
   <!-- PWA -->
   <link rel="manifest" href="/GrafikSmen/manifest.json">
   <meta name="theme-color" content="#0f172a">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 
   <!-- iOS -->
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="График">
   <link rel="apple-touch-icon" href="/GrafikSmen/apple-touch-icon.png">
@@ -26,8 +27,8 @@
     <h1 class="app-title">📅 График смен</h1>
 
     <div class="header-actions">
-      <button id="btn-install" class="install-btn hidden">⬇️</button>
-      <button id="theme-toggle" class="theme-btn">🌙</button>
+      <button id="btn-install" class="icon-btn hidden" title="Установить">⬇️</button>
+      <button id="theme-toggle" class="icon-btn" title="Тема">🌙</button>
     </div>
   </div>
 
@@ -38,85 +39,181 @@
 <main class="main">
 
   <!-- КАЛЕНДАРЬ -->
-  <div class="card">
+  <div class="card calendar-card">
     <div class="month-nav">
-      <button id="prev-month">‹</button>
-      <div id="month-name"></div>
-      <button id="next-month">›</button>
+      <button id="prev-month" class="nav-btn">‹</button>
+      <div id="month-name" class="month-name"></div>
+      <button id="next-month" class="nav-btn">›</button>
+    </div>
+
+    <div class="weekdays">
+      <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span>
+      <span>Пт</span><span>Сб</span><span>Вс</span>
     </div>
 
     <div id="calendar-grid" class="calendar-grid"></div>
+
+    <div class="legend">
+      <span class="lg lg-day">День</span>
+      <span class="lg lg-night">Ночь</span>
+      <span class="lg lg-sleep">Отсыпной</span>
+      <span class="lg lg-off">Выходной</span>
+      <span class="lg lg-extra">Доп.</span>
+    </div>
   </div>
 
   <!-- НАСТРОЙКА ГРАФИКА -->
   <div class="card">
     <button id="toggle-settings" class="toggle-btn">
-      ⚙️ Настройка графика
+      <span>⚙️ Настройка графика</span>
+      <span class="chevron">›</span>
     </button>
 
     <div id="settings-panel" class="collapsible">
+      <div class="collapsible-inner">
 
-      <label>Дата начала цикла</label>
-      <input type="date" id="cycle-start" class="input-field">
+        <label class="field-label">Дата начала цикла</label>
+        <input type="date" id="cycle-start" class="input-field">
 
-      <label>Тип смены</label>
-      <select id="cycle-type" class="input-field">
-        <option value="">Выбрать</option>
-        <option value="day">День</option>
-        <option value="night">Ночь</option>
-        <option value="sleep">Отсыпной</option>
-        <option value="off">Выходной</option>
-      </select>
+        <label class="field-label">Тип смены в эту дату</label>
+        <div id="cycle-type-buttons" class="shift-grid shift-grid-5">
+          <button type="button" class="shift-btn" data-type="day">День</button>
+          <button type="button" class="shift-btn" data-type="night">Ночь</button>
+          <button type="button" class="shift-btn" data-type="sleep">Отсыпной</button>
+          <button type="button" class="shift-btn" data-type="off">Выходной</button>
+          <button type="button" class="shift-btn" data-type="extra">Доп.</button>
+        </div>
 
-      <button id="btn-apply-cycle" class="btn-primary">Применить</button>
-      <button id="btn-clear-month" class="btn-danger">Очистить</button>
+        <div class="row-buttons">
+          <button id="btn-apply-cycle" class="btn-primary">Применить</button>
+          <button id="btn-clear-month" class="btn-danger">Очистить</button>
+        </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- ДОЛЖНОСТИ -->
+  <div class="card">
+    <button id="toggle-positions" class="toggle-btn">
+      <span>👔 Должности и оклад</span>
+      <span class="chevron">›</span>
+    </button>
+
+    <div id="positions-panel" class="collapsible">
+      <div class="collapsible-inner">
+
+        <div id="positions-list" class="positions-list"></div>
+
+        <button id="btn-add-position" class="btn-primary full">＋ Добавить должность</button>
+
+      </div>
     </div>
   </div>
 
   <!-- ОФОРМЛЕНИЕ -->
   <div class="card">
     <button id="toggle-theme" class="toggle-btn">
-      🎨 Оформление
+      <span>🎨 Оформление</span>
+      <span class="chevron">›</span>
     </button>
 
     <div id="theme-panel" class="collapsible">
+      <div class="collapsible-inner">
 
-      <button class="theme-option" data-theme="dark" data-accent="blue">🌌 Тёмная синяя</button>
-      <button class="theme-option" data-theme="dark" data-accent="purple">🌃 Тёмная фиолет</button>
-      <button class="theme-option" data-theme="light" data-accent="blue">🌤 Светлая синяя</button>
-      <button class="theme-option" data-theme="light" data-accent="green">🌿 Светлая зелёная</button>
+        <div class="mode-switch">
+          <button class="mode-btn" data-mode="light">☀️ Светлая</button>
+          <button class="mode-btn" data-mode="dark">🌙 Тёмная</button>
+        </div>
 
+        <label class="field-label">Светлые темы</label>
+        <div class="theme-grid">
+          <button class="theme-tile" data-theme="light" data-accent="blue">
+            <span class="tile-preview tp-light-blue"></span>
+            <span>Небо</span>
+          </button>
+          <button class="theme-tile" data-theme="light" data-accent="green">
+            <span class="tile-preview tp-light-green"></span>
+            <span>Мята</span>
+          </button>
+          <button class="theme-tile" data-theme="light" data-accent="peach">
+            <span class="tile-preview tp-light-peach"></span>
+            <span>Персик</span>
+          </button>
+          <button class="theme-tile" data-theme="light" data-accent="lavender">
+            <span class="tile-preview tp-light-lavender"></span>
+            <span>Лаванда</span>
+          </button>
+        </div>
+
+        <label class="field-label">Тёмные темы</label>
+        <div class="theme-grid">
+          <button class="theme-tile" data-theme="dark" data-accent="blue">
+            <span class="tile-preview tp-dark-blue"></span>
+            <span>Полночь</span>
+          </button>
+          <button class="theme-tile" data-theme="dark" data-accent="purple">
+            <span class="tile-preview tp-dark-purple"></span>
+            <span>Аметист</span>
+          </button>
+          <button class="theme-tile" data-theme="dark" data-accent="green">
+            <span class="tile-preview tp-dark-green"></span>
+            <span>Лес</span>
+          </button>
+          <button class="theme-tile" data-theme="dark" data-accent="rose">
+            <span class="tile-preview tp-dark-rose"></span>
+            <span>Закат</span>
+          </button>
+        </div>
+
+      </div>
     </div>
   </div>
 
   <!-- ИТОГИ -->
   <div class="card">
-    <h2>Итоги</h2>
+    <h2 class="card-title">📊 Итоги</h2>
 
     <div class="summary">
-      <div>Дней: <span id="stat-workdays">0</span></div>
-      <div>Часов: <span id="stat-hours">0</span></div>
-      <div>Ночей: <span id="stat-nights">0</span></div>
+      <div class="summary-cell">
+        <span class="summary-num" id="stat-workdays">0</span>
+        <span class="summary-lbl">Дней</span>
+      </div>
+      <div class="summary-cell">
+        <span class="summary-num" id="stat-hours">0</span>
+        <span class="summary-lbl">Часов</span>
+      </div>
+      <div class="summary-cell">
+        <span class="summary-num" id="stat-nights">0</span>
+        <span class="summary-lbl">Ночей</span>
+      </div>
     </div>
   </div>
 
   <!-- ЗАРПЛАТА -->
   <div class="card">
-    <h2>Зарплата</h2>
+    <h2 class="card-title">💰 Зарплата</h2>
 
-    <div>Оклад: <span id="calc-salary">—</span></div>
+    <div class="row">
+      <span class="row-label">Оклад</span>
+      <span class="row-value" id="calc-salary">—</span>
+    </div>
+    <div class="row">
+      <span class="row-label">Норма часов</span>
+      <span class="row-value" id="calc-norm">—</span>
+    </div>
 
-    <label>КТУ</label>
-    <input type="number" id="ktu-input" class="input-field" step="0.1" value="1">
+    <label class="field-label">КТУ</label>
+    <input type="number" id="ktu-input" class="input-field" step="0.05" min="0" value="1">
 
     <div class="salary-result" id="salary-total">0 ₽</div>
 
     <div class="actions">
-      <button id="btn-export">📤 CSV</button>
-      <button id="btn-backup">💾 Бэкап</button>
-      <button id="btn-restore">📥 Восстановить</button>
+      <button id="btn-export" class="action-btn">📤 CSV</button>
+      <button id="btn-backup" class="action-btn">💾 Бэкап</button>
+      <button id="btn-restore" class="action-btn">📥 Восстановить</button>
     </div>
+    <input type="file" id="restore-file" accept="application/json" hidden>
   </div>
 
 </main>
@@ -126,13 +223,15 @@
   <span id="app-version"></span>
 </footer>
 
-<!-- МОДАЛКА -->
+<!-- МОДАЛКА: РЕДАКТОР ДНЯ -->
 <div id="day-modal" class="modal-overlay hidden">
   <div class="modal">
+    <div class="modal-handle"></div>
 
-    <div id="modal-date"></div>
+    <div id="modal-date" class="modal-title"></div>
 
-    <div class="shift-grid">
+    <label class="field-label">Тип смены</label>
+    <div class="shift-grid shift-grid-5">
       <button class="shift-btn" data-type="day">День</button>
       <button class="shift-btn" data-type="night">Ночь</button>
       <button class="shift-btn" data-type="sleep">Отсыпной</button>
@@ -140,11 +239,60 @@
       <button class="shift-btn" data-type="extra">Доп.</button>
     </div>
 
-    <textarea id="day-note" class="input-field" placeholder="Заметка"></textarea>
+    <label class="field-label">Часы (необязательно)</label>
+    <input type="number" id="day-hours" class="input-field" placeholder="Авто" min="0" max="24" step="0.5">
 
-    <button id="btn-save-day">Сохранить</button>
-    <button id="btn-cancel-day">Отмена</button>
+    <label class="field-label">Заметка</label>
+    <textarea id="day-note" class="input-field textarea" placeholder="Заметка"></textarea>
 
+    <div class="row-buttons">
+      <button id="btn-save-day" class="btn-primary">Сохранить</button>
+      <button id="btn-reset-day" class="btn-ghost">Сбросить</button>
+      <button id="btn-cancel-day" class="btn-ghost">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА: РЕДАКТОР ДОЛЖНОСТИ -->
+<div id="position-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-handle"></div>
+
+    <div id="position-modal-title" class="modal-title">Должность</div>
+
+    <label class="field-label">Название</label>
+    <input type="text" id="pos-name" class="input-field" placeholder="Например, Грузчик">
+
+    <label class="field-label">Оклад, ₽</label>
+    <input type="number" id="pos-salary" class="input-field" placeholder="33850" min="0" step="100">
+
+    <label class="field-label">Часы в смене</label>
+    <input type="number" id="pos-hours" class="input-field" placeholder="11" min="1" max="24" step="0.5">
+
+    <label class="field-label">Тип графика</label>
+    <div class="mode-switch">
+      <button id="pos-type-cycle" class="mode-btn" data-pt="cycle">🔄 Цикл</button>
+      <button id="pos-type-5x2" class="mode-btn" data-pt="5x2">📅 5/2</button>
+    </div>
+
+    <div id="cycle-editor-block">
+      <label class="field-label">Цикл смен</label>
+      <div id="cycle-preview" class="cycle-preview"></div>
+      <div class="cycle-add-row">
+        <button class="add-shift-btn" data-add="day">+ День</button>
+        <button class="add-shift-btn" data-add="night">+ Ночь</button>
+        <button class="add-shift-btn" data-add="sleep">+ Отсыпной</button>
+        <button class="add-shift-btn" data-add="off">+ Выходной</button>
+        <button class="add-shift-btn" data-add="extra">+ Доп.</button>
+      </div>
+      <button id="btn-cycle-clear" class="btn-ghost full">Очистить цикл</button>
+    </div>
+
+    <div class="row-buttons">
+      <button id="btn-save-position" class="btn-primary">Сохранить</button>
+      <button id="btn-delete-position" class="btn-danger">Удалить</button>
+      <button id="btn-cancel-position" class="btn-ghost">Отмена</button>
+    </div>
   </div>
 </div>
 

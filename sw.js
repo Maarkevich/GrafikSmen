@@ -1,12 +1,9 @@
 /*
-VERSION: 5.0
-⚠️ МЕНЯЙ ВЕРСИЮ ПРИ КАЖДОМ ОБНОВЛЕНИИ
-/*
-VERSION: 6.1
-⚠️ При каждом обновлении увеличивай версию
+VERSION: 7.0
+⚠️ Меняй версию при каждом обновлении
 */
 
-const CACHE_NAME = 'grafik-v6.1';
+const CACHE_NAME = 'grafik-v7.0';
 const BASE = '/GrafikSmen';
 
 /* ===== ФАЙЛЫ ДЛЯ КЭША ===== */
@@ -24,48 +21,31 @@ const ASSETS = [
 /* ===== INSTALL ===== */
 self.addEventListener('install', event => {
   console.log('[SW] Install:', CACHE_NAME);
-
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
-
   self.skipWaiting();
 });
 
 /* ===== ACTIVATE ===== */
 self.addEventListener('activate', event => {
   console.log('[SW] Activate:', CACHE_NAME);
-
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(
-        keys.map(key => {
-          if (key !== CACHE_NAME) {
-            console.log('[SW] Delete old cache:', key);
-            return caches.delete(key);
-          }
-        })
-      )
+      Promise.all(keys.map(key => key !== CACHE_NAME ? caches.delete(key) : null))
     )
   );
-
   self.clients.claim();
 });
 
-/* ===== FETCH ===== */
-/*
-Стратегия:
-- HTML → Network First (чтобы обновлялся)
-- CSS/JS → Cache First
-- fallback → index.html
+/* ===== FETCH =====
+- HTML → Network First
+- остальное → Cache First с обновлением в фоне
 */
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
-
   const req = event.request;
 
-  // HTML — всегда пробуем сеть
   if (req.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
       fetch(req)
@@ -79,11 +59,9 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Остальное — cache first
   event.respondWith(
     caches.match(req).then(cached => {
       if (cached) return cached;
-
       return fetch(req)
         .then(res => {
           const copy = res.clone();
@@ -91,17 +69,13 @@ self.addEventListener('fetch', event => {
           return res;
         })
         .catch(() => {
-          if (req.mode === 'navigate') {
-            return caches.match(`${BASE}/index.html`);
-          }
+          if (req.mode === 'navigate') return caches.match(`${BASE}/index.html`);
         });
     })
   );
 });
 
-/* ===== FORCE UPDATE (опционально) ===== */
+/* ===== FORCE UPDATE ===== */
 self.addEventListener('message', event => {
-  if (event.data === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+  if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });
