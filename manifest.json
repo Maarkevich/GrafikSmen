@@ -1,14 +1,13 @@
 {
   "name": "График смен",
   "short_name": "График",
-  "description": "Учёт смен, график работы и расчёт зарплаты",
+  "description": "Учёт рабочих смен и расчёт зарплаты",
   "start_url": "/GrafikSmen/index.html",
   "scope": "/GrafikSmen/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0b1228",
   "theme_color": "#0b1228",
-
   "icons": [
     {
       "src": "/GrafikSmen/apple-touch-icon.png",

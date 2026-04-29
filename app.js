@@ -1,119 +1,188 @@
 /* ===== VERSION ===== */
-const APP_VERSION = '7.0';
+const APP_VERSION = '4.0';
 
 /* ===== CONSTANTS ===== */
-const STORAGE_KEY = 'grafik_full_v6';
-
 const POSITIONS_DEFAULT = {
-  'РТС':            { salary: 33850, hours: 11, cycle: ['day','day','off','off'], type: 'cycle' },
-  'Прессовщик':     { salary: 33850, hours: 11, cycle: ['day','day','off','off'], type: 'cycle' },
-  'Водитель склад': { salary: 34500, hours: 8,  type: '5x2' },
-  'Водитель смена': { salary: 34500, hours: 11, cycle: ['day','day','off','off'], type: 'cycle' },
-  'Разнорабочий':   { salary: 33850, hours: 8,  type: '5x2' },
-  'Упаковщик':      { salary: 33850, hours: 11, cycle: ['day','day','off','off'], type: 'cycle' },
-  'Диспетчер':      { salary: 34500, hours: 11, cycle: ['day','day','off','off'], type: 'cycle' },
-  'Начальник смены':{ salary: 37500, hours: 11, cycle: ['day','day','off','off','night','night','off','off'], type: 'cycle' },
-  'Мельник':        { salary: 33850, hours: 11, cycle: ['day','day','off','off','night','night','off','off'], type: 'cycle' },
-  'Автоклавщик':    { salary: 33850, hours: 11, cycle: ['day','night','sleep','off'], type: 'cycle' }
+  'РТС':            { salary: 33850, hoursPerShift: 11, shiftHours: 12, cycleType: 'cyclic', cycle: ['day','day','off','off'], hasNight: false, hasSleep: false, is5x2: false },
+  'Прессовщик':     { salary: 33850, hoursPerShift: 11, shiftHours: 12, cycleType: 'cyclic', cycle: ['day','day','off','off'], hasNight: false, hasSleep: false, is5x2: false },
+  'Водитель склад': { salary: 34500, hoursPerShift: 8,  shiftHours: 9,  cycleType: '5x2',     hasNight: false, hasSleep: false, is5x2: true  },
+  'Водитель смена': { salary: 34500, hoursPerShift: 11, shiftHours: 12, cycleType: 'cyclic', cycle: ['day','day','off','off'], hasNight: false, hasSleep: false, is5x2: false },
+  'Разнорабочий':   { salary: 33850, hoursPerShift: 8,  shiftHours: 9,  cycleType: '5x2',     hasNight: false, hasSleep: false, is5x2: true  },
+  'Упаковщик':      { salary: 33850, hoursPerShift: 11, shiftHours: 12, cycleType: 'cyclic', cycle: ['day','day','off','off'], dayTimeCustom: true, hasNight: false, hasSleep: false, is5x2: false },
+  'Диспетчер':      { salary: 34500, hoursPerShift: 11, shiftHours: 12, cycleType: 'cyclic', cycle: ['day','day','off','off'], hasNight: false, hasSleep: false, is5x2: false },
+  'Начальник смены':{ salary: 37500, hoursPerShift: 11, shiftHours: 12, cycleType: 'cyclic', cycle: ['day','day','off','off','night','night','off','off'], hasNight: true, hasSleep: false, is5x2: false },
+  'Мельник':        { salary: 33850, hoursPerShift: 11, shiftHours: 12, cycleType: 'cyclic', cycle: ['day','day','off','off','night','night','off','off'], hasNight: true, hasSleep: false, is5x2: false },
+  'Автоклавщик':    { salary: 33850, hoursPerShift: 11, shiftHours: 12, cycleType: 'cyclic', cycle: ['day','night','sleep','off'], hasNight: true, hasSleep: true, is5x2: false }
 };
 
-const SHIFT_LABEL = {
-  day:   'День',
-  night: 'Ночь',
-  sleep: 'Отсыпной',
-  off:   'Выходной',
-  extra: 'Доп.'
-};
+/* словарь должностей: live = state.positions || POSITIONS_DEFAULT */
+let POSITIONS = JSON.parse(JSON.stringify(POSITIONS_DEFAULT));
+
+const SHIFT_LABEL  = { day:'День', night:'Ночь', sleep:'Отсыпной', off:'Выходной', extra:'Доп.', none:'' };
+const SHIFT_CLASS  = { day:'shift-day', night:'shift-night', sleep:'shift-sleep', off:'shift-off', extra:'shift-extra', none:'shift-none' };
+const MONTH_NAMES  = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const DAY_NAMES_HEADER = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const NORM_HOURS   = 165;
+const STORAGE_KEY  = 'zp_calc_v3';
+const THEME_KEY    = 'zp_theme';
+const ACCENT_KEY   = 'zp_accent';
 
 /* ===== STATE ===== */
-let state = {
+const state = {
   position: '',
-  positions: {},
+  mode: 'schedule',
   year: new Date().getFullYear(),
   month: new Date().getMonth(),
   cycleStartDate: '',
   cycleStartType: '',
-  ktu: 1,
-  months: {} // key: 'y-m-d' -> { type, hours, note }
+  positions: null,        // null = use defaults; объект — кастомизировано
+  months: {}
 };
 
-const $ = s => document.querySelector(s);
-const $$ = s => document.querySelectorAll(s);
+/* ===== HELPERS ===== */
+const $  = sel => document.querySelector(sel);
+const $$ = sel => document.querySelectorAll(sel);
+const safeLoad = (key, fb = null) => { try { return JSON.parse(localStorage.getItem(key)) || fb; } catch { return fb; } };
+const safeSave = (key, data) => { try { localStorage.setItem(key, JSON.stringify(data)); } catch {} };
+const cellKey  = (y, m, d) => `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+const monthKey = (y, m)    => `${y}-${String(m+1).padStart(2,'0')}`;
+const getMonthData = (y, m) => {
+  const k = monthKey(y, m);
+  if (!state.months[k]) state.months[k] = { ktu: null, cells: {} };
+  return state.months[k];
+};
 
-/* ===== STORAGE ===== */
-function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  })[c]);
 }
-function load() {
-  const d = localStorage.getItem(STORAGE_KEY);
-  if (d) {
-    try { state = Object.assign(state, JSON.parse(d)); } catch (e) {}
+
+/* ===== ЛОГИКА (НЕ МЕНЯЕМ) ===== */
+const autoShift = (pos, y, m, d) => {
+  const cfg = POSITIONS[pos];
+  if (!pos || !state.cycleStartDate || !state.cycleStartType || !cfg) return null;
+  if (cfg.is5x2) {
+    const dow = new Date(y, m, d).getDay();
+    return (dow === 0 || dow === 6) ? 'off' : 'day';
   }
-}
+  const cycle = cfg.cycle;
+  const startIdx = cycle.indexOf(state.cycleStartType);
+  if (startIdx === -1) return null;
+  const diff = Math.round((new Date(y, m, d) - new Date(state.cycleStartDate)) / 86400000);
+  return cycle[((startIdx + diff) % cycle.length + cycle.length) % cycle.length];
+};
 
-/* ===== INIT ===== */
-function init() {
-  load();
+const shiftHours = (pos, type, extraDur) => {
+  const cfg = POSITIONS[pos];
+  if (!cfg) return 0;
+  if (type === 'day' || type === 'night') return cfg.hoursPerShift;
+  if (type === 'extra') return extraDur === '9' ? 8 : 11;
+  return 0;
+};
 
-  if (!state.positions || Object.keys(state.positions).length === 0) {
-    state.positions = JSON.parse(JSON.stringify(POSITIONS_DEFAULT));
+const monthStats = (pos, y, m) => {
+  if (!pos) return { hours: 0, workDays: 0, nights: 0 };
+  const md = getMonthData(y, m);
+  let hours = 0, workDays = 0, nights = 0;
+  const days = new Date(y, m + 1, 0).getDate();
+  for (let d = 1; d <= days; d++) {
+    const ck = cellKey(y, m, d);
+    const cell = md.cells[ck];
+    const type = cell?.type || autoShift(pos, y, m, d) || 'none';
+    const h = cell?.hours ?? shiftHours(pos, type, cell?.extraDur);
+    if (!['off', 'sleep', 'none'].includes(type)) { workDays++; hours += h; }
+    if (type === 'night') nights++;
   }
+  return { hours, workDays, nights };
+};
 
-  fillPositions();
-  initTheme();
-  bindUI();
-  renderAll();
+const calculateSalary = ({ baseSalary, hours, normHours = NORM_HOURS, ktu = 1 }) =>
+  (baseSalary && hours > 0) ? Math.round(baseSalary * ktu / normHours * hours) : null;
 
-  $('#app-version').textContent = 'v' + APP_VERSION;
+const formatRubles = (a) => `${a.toLocaleString('ru-RU')} ₽`;
 
-  // PWA install prompt
-  let deferredPrompt;
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault();
-    deferredPrompt = e;
-    $('#btn-install').classList.remove('hidden');
-  });
-  $('#btn-install').onclick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    $('#btn-install').classList.add('hidden');
-  };
-}
+/* ===== RENDER ===== */
+const renderCalendar = (direction) => {
+  $('#month-name').textContent = `${MONTH_NAMES[state.month]} ${state.year}`;
 
-/* ===== POSITIONS ===== */
-function fillPositions() {
+  const grid = $('#calendar-grid');
+  grid.classList.remove('slide-left', 'slide-right');
+  void grid.offsetWidth;
+  if (direction === 'next') grid.classList.add('slide-left');
+  else if (direction === 'prev') grid.classList.add('slide-right');
+
+  let html = DAY_NAMES_HEADER.map(d => `<div class="day-header">${d}</div>`).join('');
+
+  const offset = (new Date(state.year, state.month, 1).getDay() || 7) - 1;
+  for (let i = 0; i < offset; i++) html += `<div class="day-cell empty"></div>`;
+
+  const days = new Date(state.year, state.month + 1, 0).getDate();
+  const today = new Date();
+  for (let d = 1; d <= days; d++) {
+    const ck = cellKey(state.year, state.month, d);
+    const md = getMonthData(state.year, state.month);
+    const auto = autoShift(state.position, state.year, state.month, d);
+    const cell = md.cells[ck];
+    const type = cell?.type || auto || 'none';
+    const label = cell?.note ? '📝' : SHIFT_LABEL[type];
+    const isToday = d === today.getDate() && state.month === today.getMonth() && state.year === today.getFullYear();
+    html += `<div class="day-cell ${SHIFT_CLASS[type]} ${isToday ? 'today' : ''}" data-day="${d}">
+      <span class="day-num">${d}</span>
+      <span class="day-label">${label || ''}</span>
+    </div>`;
+  }
+  grid.innerHTML = html;
+};
+
+const renderLegend = () => {
+  const items = [
+    ['day', 'День'], ['night', 'Ночь'], ['sleep', 'Отсыпной'],
+    ['off', 'Выходной'], ['extra', 'Доп.']
+  ];
+  $('#legend').innerHTML = items.map(([k, l]) =>
+    `<span class="legend-item ${SHIFT_CLASS[k]}">${l}</span>`
+  ).join('');
+};
+
+const renderStats = () => {
+  const s = monthStats(state.position, state.year, state.month);
+  $('#stat-workdays').textContent = s.workDays;
+  $('#stat-hours').textContent = s.hours;
+  $('#stat-nights').textContent = s.nights;
+};
+
+const renderSalary = () => {
+  const pos = POSITIONS[state.position];
+  $('#calc-salary').textContent = pos ? formatRubles(pos.salary) : '—';
+  $('#calc-norm').textContent = `${NORM_HOURS} ч`;
+  const stats = monthStats(state.position, state.year, state.month);
+  $('#calc-auto-hours').textContent = stats.hours;
+  const ktu = parseFloat($('#ktu-input').value) || 1;
+  const res = pos ? calculateSalary({ baseSalary: pos.salary, hours: stats.hours, normHours: NORM_HOURS, ktu }) : null;
+  $('#salary-total').textContent = res ? formatRubles(res) : '0 ₽';
+  $('#salary-formula').textContent = res ? `Оклад × КТУ / ${NORM_HOURS} × ${stats.hours} ч` : '';
+};
+
+const renderPositionSelect = () => {
   const sel = $('#position-select');
+  sel.innerHTML = '<option value="">— Выберите должность —</option>' +
+    Object.keys(POSITIONS).map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+  sel.value = state.position || '';
+};
 
-  sel.innerHTML =
-    '<option value="">Выберите должность</option>' +
-    Object.keys(state.positions)
-      .map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
-
-  sel.value = state.position;
-
-  sel.onchange = e => {
-    state.position = e.target.value;
-    renderAll();
-    save();
-  };
-}
-
-function renderPositionsList() {
+const renderPositionsList = () => {
   const list = $('#positions-list');
-  const names = Object.keys(state.positions);
-
+  const names = Object.keys(POSITIONS);
   if (names.length === 0) {
-    list.innerHTML = '<div class="row-label" style="text-align:center;padding:14px;">Нет должностей</div>';
+    list.innerHTML = '<div class="calc-row-label" style="text-align:center;padding:14px;">Нет должностей</div>';
     return;
   }
-
   list.innerHTML = names.map(name => {
-    const p = state.positions[name];
-    const meta = p.type === '5x2'
-      ? `5/2 · ${p.hours} ч · ${p.salary} ₽`
-      : `Цикл ${p.cycle.length} дн · ${p.hours} ч · ${p.salary} ₽`;
+    const p = POSITIONS[name];
+    const meta = p.is5x2
+      ? `5/2 · ${p.hoursPerShift} ч · ${p.salary.toLocaleString('ru-RU')} ₽`
+      : `Цикл ${p.cycle?.length || 0} дн · ${p.hoursPerShift} ч · ${p.salary.toLocaleString('ru-RU')} ₽`;
     return `
       <div class="position-row">
         <div class="pos-info">
@@ -124,27 +193,37 @@ function renderPositionsList() {
       </div>
     `;
   }).join('');
-
   list.querySelectorAll('.pos-edit').forEach(btn => {
     btn.onclick = () => openPositionModal(btn.dataset.edit);
   });
-}
+};
+
+const updateInputsToMonth = () => {
+  const md = getMonthData(state.year, state.month);
+  $('#ktu-input').value = md.ktu ?? 1;
+};
+
+/* ===== POSITIONS PERSIST ===== */
+const persistPositions = () => {
+  state.positions = JSON.parse(JSON.stringify(POSITIONS));
+  safeSave(STORAGE_KEY, state);
+};
 
 /* ===== POSITION MODAL ===== */
 let editingPosition = null;
 let draftCycle = [];
-let draftType = 'cycle';
+let draftType = 'cyclic';
 
 function openPositionModal(name) {
   editingPosition = name;
-  const p = name ? state.positions[name] : null;
+  const p = name ? POSITIONS[name] : null;
 
   $('#position-modal-title').textContent = name ? 'Редактирование' : 'Новая должность';
-  $('#pos-name').value = name || '';
+  $('#pos-name').value   = name || '';
   $('#pos-salary').value = p ? p.salary : '';
-  $('#pos-hours').value = p ? p.hours : 11;
+  $('#pos-hours').value  = p ? p.hoursPerShift : 11;
 
-  draftType = p ? p.type : 'cycle';
+  draftType  = p ? (p.is5x2 ? '5x2' : 'cyclic') : 'cyclic';
   draftCycle = (p && p.cycle) ? p.cycle.slice() : [];
 
   applyDraftType();
@@ -155,26 +234,21 @@ function openPositionModal(name) {
 }
 
 function applyDraftType() {
-  $$('#position-modal .mode-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.pt === draftType);
-  });
-  $('#cycle-editor-block').style.display = draftType === 'cycle' ? '' : 'none';
+  $$('.pos-type-btn').forEach(b => b.classList.toggle('active', b.dataset.pt === draftType));
+  $('#cycle-editor-block').style.display = draftType === 'cyclic' ? '' : 'none';
 }
 
 function renderCyclePreview() {
   const wrap = $('#cycle-preview');
   if (draftCycle.length === 0) {
-    wrap.innerHTML = '<span class="row-label">Добавьте смены ниже</span>';
+    wrap.innerHTML = '<span style="color:var(--text-muted);font-size:12px;">Добавьте смены ниже</span>';
     return;
   }
   wrap.innerHTML = draftCycle.map((t, i) =>
     `<span class="cycle-chip" data-t="${t}" data-i="${i}">${SHIFT_LABEL[t]} <span class="x">×</span></span>`
   ).join('');
   wrap.querySelectorAll('.cycle-chip').forEach(chip => {
-    chip.onclick = () => {
-      draftCycle.splice(+chip.dataset.i, 1);
-      renderCyclePreview();
-    };
+    chip.onclick = () => { draftCycle.splice(+chip.dataset.i, 1); renderCyclePreview(); };
   });
 }
 
@@ -182,215 +256,122 @@ function bindPositionModal() {
   $('#position-modal').addEventListener('click', e => {
     if (e.target.id === 'position-modal') $('#position-modal').classList.add('hidden');
   });
-
-  $$('#position-modal .mode-btn').forEach(btn => {
-    btn.onclick = () => {
-      draftType = btn.dataset.pt;
-      applyDraftType();
-    };
+  $$('.pos-type-btn').forEach(btn => {
+    btn.onclick = () => { draftType = btn.dataset.pt; applyDraftType(); };
   });
-
   $$('.add-shift-btn').forEach(btn => {
-    btn.onclick = () => {
-      draftCycle.push(btn.dataset.add);
-      renderCyclePreview();
-    };
+    btn.onclick = () => { draftCycle.push(btn.dataset.add); renderCyclePreview(); };
   });
-
-  $('#btn-cycle-clear').onclick = () => {
-    draftCycle = [];
-    renderCyclePreview();
-  };
-
-  $('#btn-cancel-position').onclick = () => {
-    $('#position-modal').classList.add('hidden');
-  };
+  $('#btn-cycle-clear').onclick = () => { draftCycle = []; renderCyclePreview(); };
+  $('#btn-cancel-position').onclick = () => $('#position-modal').classList.add('hidden');
 
   $('#btn-delete-position').onclick = () => {
     if (!editingPosition) return;
     if (!confirm(`Удалить «${editingPosition}»?`)) return;
-    delete state.positions[editingPosition];
+    delete POSITIONS[editingPosition];
     if (state.position === editingPosition) state.position = '';
-    save();
-    fillPositions();
+    persistPositions();
+    renderPositionSelect();
     renderPositionsList();
     renderAll();
     $('#position-modal').classList.add('hidden');
   };
 
   $('#btn-save-position').onclick = () => {
-    const name = $('#pos-name').value.trim();
+    const name   = $('#pos-name').value.trim();
     const salary = +$('#pos-salary').value || 0;
-    const hours = +$('#pos-hours').value || 0;
-
+    const hours  = +$('#pos-hours').value  || 0;
     if (!name) { alert('Введите название'); return; }
-    if (draftType === 'cycle' && draftCycle.length === 0) {
-      alert('Добавьте хотя бы одну смену в цикл');
-      return;
+    if (draftType === 'cyclic' && draftCycle.length === 0) {
+      alert('Добавьте хотя бы одну смену в цикл'); return;
     }
 
-    // если переименовали — удалить старую
     if (editingPosition && editingPosition !== name) {
-      delete state.positions[editingPosition];
+      delete POSITIONS[editingPosition];
       if (state.position === editingPosition) state.position = name;
     }
 
-    const obj = { salary, hours, type: draftType };
-    if (draftType === 'cycle') obj.cycle = draftCycle.slice();
-    state.positions[name] = obj;
+    const obj = {
+      salary,
+      hoursPerShift: hours,
+      shiftHours: hours + 1,
+      is5x2: draftType === '5x2',
+      cycleType: draftType,
+      hasNight: draftType === 'cyclic' ? draftCycle.includes('night') : false,
+      hasSleep: draftType === 'cyclic' ? draftCycle.includes('sleep') : false
+    };
+    if (draftType === 'cyclic') obj.cycle = draftCycle.slice();
+    POSITIONS[name] = obj;
 
-    save();
-    fillPositions();
+    persistPositions();
+    renderPositionSelect();
     renderPositionsList();
     renderAll();
     $('#position-modal').classList.add('hidden');
   };
 }
 
-/* ===== SHIFT CALC (логика без изменений) ===== */
-function getShiftAuto(y, m, d) {
-  const pos = state.positions[state.position];
-  if (!pos) return null;
+/* ===== DAY MODAL ===== */
+let modalDay = null;
+let modalShiftType = null;
 
-  if (pos.type === '5x2') {
-    const dow = new Date(y, m, d).getDay();
-    return (dow === 0 || dow === 6) ? 'off' : 'day';
-  }
+function openModal(day) {
+  modalDay = day;
+  const md = getMonthData(state.year, state.month);
+  const ck = cellKey(state.year, state.month, day);
+  const auto = autoShift(state.position, state.year, state.month, day) || 'none';
+  const cell = md.cells[ck] || { type: auto, hours: null, extraDur: '12', note: '' };
+  modalShiftType = cell.type;
 
-  if (!state.cycleStartDate || !state.cycleStartType) return null;
+  $('#modal-title').textContent = 'Редактирование смены';
+  $('#modal-date').textContent = `${day} ${MONTH_NAMES[state.month].toLowerCase()} ${state.year}`;
 
-  const start = new Date(state.cycleStartDate);
-  const current = new Date(y, m, d);
+  // 5 цветных кнопок
+  $('#shift-grid').innerHTML = ['day','night','sleep','off','extra'].map(k =>
+    `<button class="shift-btn ${SHIFT_CLASS[k]} ${cell.type === k ? 'active' : ''}" data-type="${k}">${SHIFT_LABEL[k]}</button>`
+  ).join('');
 
-  const diff = Math.floor((current - start) / 86400000);
+  $('#adj-hours').value = cell.hours ?? shiftHours(state.position, cell.type, cell.extraDur);
+  $('#day-note').value  = cell.note || '';
+  $('#day-modal').classList.remove('hidden');
 
-  const idx = pos.cycle.indexOf(state.cycleStartType);
-  if (idx === -1) return null;
-
-  const len = pos.cycle.length;
-  return pos.cycle[((idx + diff) % len + len) % len];
+  $('#shift-grid').querySelectorAll('.shift-btn').forEach(b => {
+    b.onclick = () => {
+      $('#shift-grid').querySelectorAll('.shift-btn').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      modalShiftType = b.dataset.type;
+      $('#adj-hours').value = shiftHours(state.position, modalShiftType, cell.extraDur);
+    };
+  });
 }
 
-function getDayInfo(y, m, d) {
-  const key = `${y}-${m}-${d}`;
-  const override = state.months[key];
-  const auto = getShiftAuto(y, m, d);
-  const type = (override && override.type) ? override.type : auto;
-  const pos = state.positions[state.position];
-  const defaultHours = pos ? pos.hours : 0;
-  let hours = override && override.hours != null ? +override.hours : null;
-  if (hours == null) {
-    hours = (type === 'day' || type === 'night' || type === 'extra') ? defaultHours : 0;
-  }
-  return {
-    type,
-    hours,
-    note: override ? (override.note || '') : '',
-    overridden: !!override
+function saveDayData() {
+  const md = getMonthData(state.year, state.month);
+  const ck = cellKey(state.year, state.month, modalDay);
+  md.cells[ck] = {
+    type: modalShiftType || 'none',
+    hours: parseFloat($('#adj-hours').value) || 0,
+    note: $('#day-note').value.trim()
   };
 }
 
-/* ===== CALENDAR ===== */
-function renderCalendar(direction) {
-  const grid = $('#calendar-grid');
-
-  grid.classList.remove('slide-left', 'slide-right');
-  void grid.offsetWidth;
-  if (direction === 'next') grid.classList.add('slide-left');
-  else if (direction === 'prev') grid.classList.add('slide-right');
-
-  const monthName = new Date(state.year, state.month)
-    .toLocaleString('ru', { month: 'long', year: 'numeric' });
-
-  $('#month-name').textContent = monthName;
-
-  const firstDay = new Date(state.year, state.month, 1).getDay() || 7;
-  const days = new Date(state.year, state.month + 1, 0).getDate();
-
-  const today = new Date();
-  const isCurrentMonth = today.getFullYear() === state.year && today.getMonth() === state.month;
-
-  let html = '';
-  for (let i = 1; i < firstDay; i++) html += '<div></div>';
-
-  for (let d = 1; d <= days; d++) {
-    const info = getDayInfo(state.year, state.month, d);
-    const cls = info.type ? `shift-${info.type}` : '';
-    const todayCls = isCurrentMonth && today.getDate() === d ? 'today' : '';
-    const noteCls = info.note ? 'has-note' : '';
-    html += `<div class="day-cell ${cls} ${todayCls} ${noteCls}" data-day="${d}">${d}</div>`;
-  }
-  grid.innerHTML = html;
+/* ===== CYCLE TYPE BUTTONS (вместо select) ===== */
+function bindCycleTypeButtons() {
+  $$('#cycle-type-buttons .shift-btn').forEach(btn => {
+    btn.onclick = () => {
+      $$('#cycle-type-buttons .shift-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.cycleStartType = btn.dataset.type;
+    };
+  });
+}
+function syncCycleTypeButtons() {
+  $$('#cycle-type-buttons .shift-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.type === state.cycleStartType)
+  );
 }
 
-/* ===== STATS & SALARY ===== */
-function getStats() {
-  const days = new Date(state.year, state.month + 1, 0).getDate();
-  let workdays = 0, hours = 0, nights = 0;
-  for (let d = 1; d <= days; d++) {
-    const info = getDayInfo(state.year, state.month, d);
-    if (!info.type || info.type === 'off' || info.type === 'sleep') continue;
-    workdays++;
-    hours += info.hours || 0;
-    if (info.type === 'night') nights++;
-  }
-  return { workdays, hours, nights };
-}
-
-function getNormHours(y, m) {
-  // примерная норма: рабочие дни 5/2 × 8 (упрощённо)
-  const days = new Date(y, m + 1, 0).getDate();
-  let n = 0;
-  for (let d = 1; d <= days; d++) {
-    const dow = new Date(y, m, d).getDay();
-    if (dow !== 0 && dow !== 6) n++;
-  }
-  return n * 8;
-}
-
-function renderSalary() {
-  const pos = state.positions[state.position];
-  if (!pos) {
-    $('#calc-salary').textContent = '—';
-    $('#calc-norm').textContent = '—';
-    $('#salary-total').textContent = '0 ₽';
-    return;
-  }
-
-  const stats = getStats();
-  const norm = getNormHours(state.year, state.month);
-  const ktu = +($('#ktu-input').value || 1) || 1;
-
-  $('#calc-salary').textContent = pos.salary.toLocaleString('ru') + ' ₽';
-  $('#calc-norm').textContent = norm + ' ч';
-
-  // Зарплата = (оклад / норма) × отработанные часы × КТУ
-  const total = norm > 0 ? Math.round(pos.salary / norm * stats.hours * ktu) : 0;
-  $('#salary-total').textContent = total.toLocaleString('ru') + ' ₽';
-}
-
-function renderStats() {
-  const s = getStats();
-  $('#stat-workdays').textContent = s.workdays;
-  $('#stat-hours').textContent = s.hours;
-  $('#stat-nights').textContent = s.nights;
-}
-
-/* ===== NAV ===== */
-function prevMonth() {
-  state.month--;
-  if (state.month < 0) { state.month = 11; state.year--; }
-  renderAll('prev');
-  save();
-}
-function nextMonth() {
-  state.month++;
-  if (state.month > 11) { state.month = 0; state.year++; }
-  renderAll('next');
-  save();
-}
-
-/* ===== SETTINGS PANEL ===== */
+/* ===== COLLAPSIBLE ===== */
 function bindCollapsible(toggleSel, panelSel) {
   const t = $(toggleSel), p = $(panelSel);
   t.onclick = () => {
@@ -399,284 +380,272 @@ function bindCollapsible(toggleSel, panelSel) {
   };
 }
 
-function bindSettings() {
-  bindCollapsible('#toggle-settings', '#settings-panel');
-  bindCollapsible('#toggle-positions', '#positions-panel');
-  bindCollapsible('#toggle-theme', '#theme-panel');
-
-  $('#cycle-start').oninput = e => { state.cycleStartDate = e.target.value; };
-
-  // визуальные кнопки выбора типа стартовой смены
-  $$('#cycle-type-buttons .shift-btn').forEach(btn => {
-    btn.onclick = () => {
-      $$('#cycle-type-buttons .shift-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      state.cycleStartType = btn.dataset.type;
-    };
-  });
-
-  $('#btn-apply-cycle').onclick = () => { renderAll(); save(); };
-
-  $('#btn-clear-month').onclick = () => {
-    if (confirm('Очистить ручные правки этого месяца?')) {
-      const y = state.year, m = state.month;
-      const days = new Date(y, m + 1, 0).getDate();
-      for (let d = 1; d <= days; d++) delete state.months[`${y}-${m}-${d}`];
-      renderAll();
-      save();
-    }
-  };
-
-  $('#btn-add-position').onclick = () => openPositionModal(null);
-}
-
-function syncSettingsInputs() {
-  $('#cycle-start').value = state.cycleStartDate || '';
-  $$('#cycle-type-buttons .shift-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.type === state.cycleStartType);
-  });
-  $('#ktu-input').value = state.ktu != null ? state.ktu : 1;
-}
-
-/* ===== DAY MODAL ===== */
-let modalDay = null;
-let modalType = null;
-
-function openModal(day) {
-  modalDay = day;
-  const info = getDayInfo(state.year, state.month, day);
-  modalType = info.type;
-
-  const dateStr = new Date(state.year, state.month, day)
-    .toLocaleDateString('ru', { day: 'numeric', month: 'long', weekday: 'long' });
-  $('#modal-date').textContent = dateStr;
-
-  $('#day-hours').value = info.overridden && info.hours != null ? info.hours : '';
-  $('#day-note').value = info.note || '';
-
-  $$('#day-modal .shift-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.type === modalType);
-  });
-
-  $('#day-modal').classList.remove('hidden');
-}
-
-function bindDayModal() {
-  $('#day-modal').addEventListener('click', e => {
-    if (e.target.id === 'day-modal') $('#day-modal').classList.add('hidden');
-  });
-
-  $$('#day-modal .shift-btn').forEach(btn => {
-    btn.onclick = () => {
-      modalType = btn.dataset.type;
-      $$('#day-modal .shift-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    };
-  });
-
-  $('#btn-save-day').onclick = () => {
-    if (!modalDay) return;
-    const key = `${state.year}-${state.month}-${modalDay}`;
-    const hoursVal = $('#day-hours').value.trim();
-    state.months[key] = {
-      type: modalType,
-      hours: hoursVal === '' ? null : +hoursVal,
-      note: $('#day-note').value.trim()
-    };
-    $('#day-modal').classList.add('hidden');
-    renderAll();
-    save();
-  };
-
-  $('#btn-reset-day').onclick = () => {
-    if (!modalDay) return;
-    delete state.months[`${state.year}-${state.month}-${modalDay}`];
-    $('#day-modal').classList.add('hidden');
-    renderAll();
-    save();
-  };
-
-  $('#btn-cancel-day').onclick = () => {
-    $('#day-modal').classList.add('hidden');
-  };
-}
-
 /* ===== THEME ===== */
 const THEME_PRESETS = {
-  light: ['blue','green','peach','lavender'],
-  dark:  ['blue','purple','green','rose']
+  light: ['blue', 'green', 'peach', 'lavender'],
+  dark:  ['blue', 'purple', 'green', 'rose']
 };
 
-function initTheme() {
-  const t = localStorage.getItem('theme') || 'dark';
-  const a = localStorage.getItem('accent') || 'blue';
-  applyTheme(t, a);
-
-  $$('.theme-tile').forEach(btn => {
-    btn.onclick = () => applyTheme(btn.dataset.theme, btn.dataset.accent);
-  });
-
-  $$('.mode-btn[data-mode]').forEach(btn => {
-    btn.onclick = () => {
-      const mode = btn.dataset.mode;
-      const presets = THEME_PRESETS[mode];
-      const cur = localStorage.getItem('accent') || 'blue';
-      const next = presets.includes(cur) ? cur : presets[0];
-      applyTheme(mode, next);
-    };
-  });
-
-  $('#theme-toggle').onclick = () => {
-    const cur = document.documentElement.dataset.theme;
-    const next = cur === 'dark' ? 'light' : 'dark';
-    const presets = THEME_PRESETS[next];
-    const accCur = localStorage.getItem('accent') || 'blue';
-    const acc = presets.includes(accCur) ? accCur : presets[0];
-    applyTheme(next, acc);
-  };
-}
-
 function applyTheme(t, a) {
-  document.documentElement.dataset.theme = t;
-  document.documentElement.dataset.accent = a;
+  document.documentElement.setAttribute('data-theme', t);
+  document.documentElement.setAttribute('data-accent', a);
+  safeSave(THEME_KEY, t);
+  safeSave(ACCENT_KEY, a);
+  $('#theme-toggle').textContent = t === 'dark' ? '☀️' : '🌙';
 
-  localStorage.setItem('theme', t);
-  localStorage.setItem('accent', a);
+  $$('.theme-tile').forEach(b =>
+    b.classList.toggle('active', b.dataset.theme === t && b.dataset.accent === a)
+  );
+  $$('.mode-sw-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.mode === t)
+  );
 
-  $('#theme-toggle').textContent = t === 'dark' ? '🌙' : '☀️';
-
-  // обновить активные тайлы
-  $$('.theme-tile').forEach(btn => {
-    btn.classList.toggle('active',
-      btn.dataset.theme === t && btn.dataset.accent === a);
-  });
-  $$('.mode-btn[data-mode]').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.mode === t);
-  });
-
-  // Theme-color для статусбара
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) {
     const colors = {
-      'dark-blue': '#0b1228', 'dark-purple': '#160a30', 'dark-green': '#061a14', 'dark-rose': '#200818',
-      'light-blue': '#cfe4ff', 'light-green': '#c7f0d8', 'light-peach': '#ffd9b8', 'light-lavender': '#e0d0ff'
+      'dark-blue':'#0b1228','dark-purple':'#160a30','dark-green':'#061a14','dark-rose':'#200818',
+      'light-blue':'#cfe4ff','light-green':'#c7f0d8','light-peach':'#ffd9b8','light-lavender':'#e0d0ff'
     };
-    meta.content = colors[`${t}-${a}`] || '#0f172a';
+    meta.content = colors[`${t}-${a}`] || '#0b1228';
   }
 }
 
-/* ===== EXPORT / BACKUP ===== */
-function exportCSV() {
-  const pos = state.positions[state.position];
-  if (!pos) { alert('Сначала выберите должность'); return; }
+function initTheme() {
+  let t = safeLoad(THEME_KEY) || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  let a = safeLoad(ACCENT_KEY) || 'blue';
+  if (typeof t !== 'string') t = 'dark';
+  if (typeof a !== 'string') a = 'blue';
+  applyTheme(t, a);
 
-  const days = new Date(state.year, state.month + 1, 0).getDate();
-  const lines = ['Дата;Тип;Часы;Заметка'];
-  for (let d = 1; d <= days; d++) {
-    const info = getDayInfo(state.year, state.month, d);
-    const date = `${String(d).padStart(2,'0')}.${String(state.month+1).padStart(2,'0')}.${state.year}`;
-    const type = info.type ? SHIFT_LABEL[info.type] : '';
-    const note = (info.note || '').replace(/[;\n\r]/g, ' ');
-    lines.push(`${date};${type};${info.hours || 0};${note}`);
-  }
-  const monthName = new Date(state.year, state.month).toLocaleString('ru', { month: 'long', year: 'numeric' });
-  downloadFile(`grafik-${state.year}-${String(state.month+1).padStart(2,'0')}.csv`,
-    '\uFEFF' + lines.join('\n'), 'text/csv;charset=utf-8;');
-}
-
-function backup() {
-  const data = JSON.stringify(state, null, 2);
-  const ts = new Date().toISOString().slice(0, 10);
-  downloadFile(`grafik-backup-${ts}.json`, data, 'application/json');
-}
-
-function restore(file) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (!data || typeof data !== 'object') throw new Error('bad');
-      if (!confirm('Заменить все данные?')) return;
-      state = Object.assign(state, data);
-      save();
-      fillPositions();
-      renderPositionsList();
-      syncSettingsInputs();
-      renderAll();
-      alert('Данные восстановлены');
-    } catch (err) {
-      alert('Ошибка чтения файла');
-    }
+  $$('.theme-tile').forEach(b => {
+    b.onclick = () => applyTheme(b.dataset.theme, b.dataset.accent);
+  });
+  $$('.mode-sw-btn').forEach(b => {
+    b.onclick = () => {
+      const mode = b.dataset.mode;
+      const presets = THEME_PRESETS[mode];
+      const cur = safeLoad(ACCENT_KEY) || 'blue';
+      const acc = presets.includes(cur) ? cur : presets[0];
+      applyTheme(mode, acc);
+    };
+  });
+  $('#theme-toggle').onclick = () => {
+    const cur = document.documentElement.getAttribute('data-theme');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    const presets = THEME_PRESETS[next];
+    const accCur = safeLoad(ACCENT_KEY) || 'blue';
+    const acc = presets.includes(accCur) ? accCur : presets[0];
+    applyTheme(next, acc);
   };
-  reader.readAsText(file);
-}
-
-function downloadFile(name, content, mime) {
-  const blob = new Blob([content], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = name;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /* ===== SWIPE ===== */
 function bindSwipe() {
   const grid = $('#calendar-grid');
   let startX = 0, startY = 0, tracking = false;
-
   grid.addEventListener('touchstart', e => {
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
     tracking = true;
   }, { passive: true });
-
   grid.addEventListener('touchend', e => {
     if (!tracking) return;
     tracking = false;
     const dx = e.changedTouches[0].clientX - startX;
     const dy = e.changedTouches[0].clientY - startY;
     if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.3) {
-      if (dx < 0) nextMonth(); else prevMonth();
+      if (dx < 0) goNext(); else goPrev();
     }
   }, { passive: true });
 }
 
-/* ===== UI ===== */
-function bindUI() {
-  $('#prev-month').onclick = prevMonth;
-  $('#next-month').onclick = nextMonth;
+function goPrev() {
+  state.month--;
+  if (state.month < 0) { state.month = 11; state.year--; }
+  updateInputsToMonth();
+  renderAll('prev');
+  safeSave(STORAGE_KEY, state);
+}
+function goNext() {
+  state.month++;
+  if (state.month > 11) { state.month = 0; state.year++; }
+  updateInputsToMonth();
+  renderAll('next');
+  safeSave(STORAGE_KEY, state);
+}
 
-  $('#calendar-grid').onclick = e => {
-    const cell = e.target.closest('.day-cell');
-    if (cell && cell.dataset.day) openModal(+cell.dataset.day);
+/* ===== PWA install ===== */
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = $('#btn-install');
+  if (btn) {
+    btn.classList.remove('hidden');
+    btn.onclick = async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      btn.classList.add('hidden');
+    };
+  }
+});
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  $('#btn-install')?.classList.add('hidden');
+});
+
+/* ===== INIT ===== */
+const init = () => {
+  const loaded = safeLoad(STORAGE_KEY);
+  if (loaded) Object.assign(state, loaded);
+
+  // если в state есть кастомные должности — используем их
+  if (state.positions && typeof state.positions === 'object' && Object.keys(state.positions).length > 0) {
+    POSITIONS = JSON.parse(JSON.stringify(state.positions));
+  } else {
+    POSITIONS = JSON.parse(JSON.stringify(POSITIONS_DEFAULT));
+  }
+
+  $('#app-version').textContent = `v${APP_VERSION}`;
+
+  renderPositionSelect();
+  renderPositionsList();
+  renderLegend();
+
+  $('#cycle-start').value = state.cycleStartDate || '';
+  syncCycleTypeButtons();
+  updateInputsToMonth();
+  renderCalendar();
+  renderStats();
+  renderSalary();
+
+  /* === события === */
+  $('#prev-month').onclick = goPrev;
+  $('#next-month').onclick = goNext;
+
+  $('#position-select').onchange = e => {
+    state.position = e.target.value;
+    updateInputsToMonth();
+    renderAll();
+    safeSave(STORAGE_KEY, state);
   };
 
   $('#ktu-input').oninput = e => {
-    state.ktu = +e.target.value || 1;
+    getMonthData(state.year, state.month).ktu = e.target.value;
     renderSalary();
-    save();
+    safeSave(STORAGE_KEY, state);
   };
 
-  $('#btn-export').onclick = exportCSV;
-  $('#btn-backup').onclick = backup;
-  $('#btn-restore').onclick = () => $('#restore-file').click();
-  $('#restore-file').onchange = e => {
-    if (e.target.files[0]) restore(e.target.files[0]);
-    e.target.value = '';
+  $('#cycle-start').oninput = e => { state.cycleStartDate = e.target.value; };
+  bindCycleTypeButtons();
+
+  $('#btn-apply-cycle').onclick = () => {
+    renderCalendar();
+    renderStats();
+    renderSalary();
+    safeSave(STORAGE_KEY, state);
+  };
+  $('#btn-clear-month').onclick = () => {
+    if (confirm('Очистить ручные правки месяца?')) {
+      getMonthData(state.year, state.month).cells = {};
+      renderAll();
+      safeSave(STORAGE_KEY, state);
+    }
   };
 
-  bindSettings();
-  bindDayModal();
+  bindCollapsible('#toggle-settings', '#settings-panel');
+  bindCollapsible('#toggle-positions', '#positions-panel');
+  bindCollapsible('#toggle-theme', '#theme-panel');
+
+  $('#btn-add-position').onclick = () => openPositionModal(null);
   bindPositionModal();
-  bindSwipe();
-  syncSettingsInputs();
-}
 
-/* ===== RENDER ===== */
+  $('#calendar-grid').onclick = e => {
+    const cell = e.target.closest('.day-cell');
+    if (cell && cell.dataset.day && !cell.classList.contains('empty')) openModal(+cell.dataset.day);
+  };
+  $('#btn-cancel-day').onclick = () => $('#day-modal').classList.add('hidden');
+  $('#day-modal').onclick = e => { if (e.target.id === 'day-modal') $('#day-modal').classList.add('hidden'); };
+  $('#btn-save-day').onclick = () => {
+    saveDayData();
+    $('#day-modal').classList.add('hidden');
+    renderAll();
+    safeSave(STORAGE_KEY, state);
+  };
+  $('#adj-minus').onclick = () => { $('#adj-hours').value = Math.max(0,  (parseFloat($('#adj-hours').value) || 0) - 0.5); };
+  $('#adj-plus').onclick  = () => { $('#adj-hours').value = Math.min(24, (parseFloat($('#adj-hours').value) || 0) + 0.5); };
+
+  /* === Экспорт CSV === */
+  $('#btn-export').onclick = () => {
+    const rows = [['Дата','Смена','Часы']];
+    Object.entries(state.months).forEach(([mk, m]) => {
+      Object.entries(m.cells).forEach(([date, c]) => rows.push([date, c.type, c.hours]));
+    });
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'schedule.csv'; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  /* === Бэкап === */
+  $('#btn-backup').onclick = () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `zp-backup-${new Date().toISOString().slice(0,10)}.json`; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  /* === Восстановить === */
+  $('#btn-restore').onclick = () => {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = '.json';
+    inp.onchange = e => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = () => {
+        try {
+          Object.assign(state, JSON.parse(r.result));
+          if (state.positions && Object.keys(state.positions).length > 0) {
+            POSITIONS = JSON.parse(JSON.stringify(state.positions));
+          }
+          renderPositionSelect();
+          renderPositionsList();
+          updateInputsToMonth();
+          syncCycleTypeButtons();
+          $('#cycle-start').value = state.cycleStartDate || '';
+          renderAll();
+          safeSave(STORAGE_KEY, state);
+          alert('Данные восстановлены');
+        } catch {
+          alert('Ошибка файла');
+        }
+      };
+      r.readAsText(f);
+    };
+    inp.click();
+  };
+
+  initTheme();
+  bindSwipe();
+
+  /* === iOS install banner === */
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  if (isIOS && !isStandalone && !localStorage.getItem('zp_ios_dismissed')) {
+    $('#ios-banner').classList.add('show');
+    $('#ios-close').onclick = () => {
+      $('#ios-banner').classList.remove('show');
+      localStorage.setItem('zp_ios_dismissed', '1');
+    };
+  }
+};
+
 function renderAll(direction) {
   renderCalendar(direction);
   renderStats();
@@ -684,12 +653,4 @@ function renderAll(direction) {
   renderPositionsList();
 }
 
-/* ===== UTIL ===== */
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-  })[c]);
-}
-
-/* ===== START ===== */
 document.addEventListener('DOMContentLoaded', init);
