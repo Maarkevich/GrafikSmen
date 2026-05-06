@@ -1,8 +1,8 @@
 /*
-VERSION: 4.0
-⚠️ ПРИ КАЖДОМ ОБНОВЛЕНИИ КОДА УВЕЛИЧИВАЙТЕ ЭТУ ВЕРСИЮ
+VERSION: 4.1
+⚠️ ПРИ КАЖДОМ ОБНОВЛЕНИИ УВЕЛИЧИВАЙТЕ ВЕРСИЮ
 */
-const CACHE_NAME = 'zp-calc-v4.0';
+const CACHE_NAME = 'zp-calc-v4.1';
 const BASE = '/GrafikSmen';
 const ASSETS_TO_CACHE = [
   `${BASE}/`,
@@ -15,7 +15,7 @@ const ASSETS_TO_CACHE = [
   `${BASE}/apple-touch-icon.png`
 ];
 
-// 1. Установка
+// 1. Установка — кэшируем все статические файлы
 self.addEventListener('install', (event) => {
   console.log('[SW] Установка кэша:', CACHE_NAME);
   event.waitUntil(
@@ -24,7 +24,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// 2. Активация — удаляем старые кеши
+// 2. Активация — удаляем старые версии кэша
 self.addEventListener('activate', (event) => {
   console.log('[SW] Активация:', CACHE_NAME);
   event.waitUntil(
@@ -40,27 +40,25 @@ self.addEventListener('activate', (event) => {
   clients.claim();
 });
 
-// 3. Network First + Cache Fallback
+// 3. Cache First + фоновое обновление (Stale-While-Revalidate)
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
-    fetch(event.request)
-      .then(networkResponse => {
-        if (networkResponse && networkResponse.ok) {
-          const clone = networkResponse.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        }
-        return networkResponse;
-      })
-      .catch(() => {
-        return caches.match(event.request).then(cached => {
-          if (cached) return cached;
-          if (event.request.mode === 'navigate') {
-            return caches.match(`${BASE}/index.html`);
+    caches.match(event.request).then(cachedResponse => {
+      // Фоновое обновление кэша
+      const fetchPromise = fetch(event.request)
+        .then(networkResponse => {
+          if (networkResponse && networkResponse.ok) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
           }
-          return new Response('Нет соединения', { status: 503 });
-        });
-      })
+          return networkResponse;
+        })
+        .catch(err => console.warn('[SW] Фоновое обновление не удалось:', err));
+
+      // Возвращаем из кэша немедленно, если есть, иначе ждём сеть
+      return cachedResponse || fetchPromise;
+    })
   );
 });

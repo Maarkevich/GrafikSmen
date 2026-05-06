@@ -4,10 +4,14 @@
   "description": "Учёт рабочих смен и расчёт зарплаты",
   "start_url": "/GrafikSmen/index.html",
   "scope": "/GrafikSmen/",
+  "id": "/GrafikSmen/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0b1228",
   "theme_color": "#0b1228",
+  "categories": ["productivity", "utilities"],
+  "lang": "ru",
+  "screenshots": [],
   "icons": [
     {
       "src": "/GrafikSmen/apple-touch-icon.png",
